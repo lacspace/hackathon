@@ -15,7 +15,10 @@ import {
   ChevronRight,
   Terminal,
   Play,
+  HelpCircle,
 } from "lucide-react";
+import { TopHeader } from "../../components/header";
+import { Sidebar } from "../../components/sidebar";
 
 interface TestCase {
   id: string;
@@ -119,94 +122,64 @@ export default function TestCasesPage() {
   };
 
   return (
-    <div className="flex min-h-screen bg-slate-50 font-sans text-slate-900 selection:bg-sky-100">
-      {/* Sidebar */}
-      <aside className="w-72 bg-white border-r border-slate-200 flex-shrink-0 flex flex-col justify-between hidden lg:flex sticky top-0 h-screen">
-        <div className="p-8">
-          <div className="flex items-center gap-3 mb-12">
-            <div className="p-2.5 bg-sky-600 rounded-xl shadow-lg shadow-sky-100 text-white">
-              <Dna className="w-6 h-6" />
-            </div>
-            <span className="text-2xl font-bold tracking-tighter">
-              PharmaGuard
-            </span>
-          </div>
-
-          <nav className="space-y-2">
-            <p className="px-4 text-[10px] font-semibold text-slate-400 uppercase tracking-[0.2em] mb-4">
-              Registry Control
-            </p>
-            <NavItem
-              icon={<LayoutDashboard size={20} />}
-              label="Patient Dashboard"
-              onClick={() => router.push("/dashboard")}
-            />
-            <NavItem
-              icon={<Beaker size={20} />}
-              label="Evidence Console"
-              onClick={() => router.push("/analysis")}
-            />
-            <NavItem
-              icon={<FileText size={20} />}
-              label="Archive Registry"
-              onClick={() => router.push("/files")}
-            />
-            <NavItem
-              icon={<FlaskConical size={20} />}
-              label="Validation Suite"
-              active
-            />
-          </nav>
-        </div>
-      </aside>
+    <div className="flex min-h-screen bg-background font-sans text-foreground selection:bg-indigo-100 transition-colors duration-500">
+      <Sidebar />
 
       {/* Main Content */}
       <main className="flex-1 p-8 xl:p-16 overflow-y-auto w-full">
+        <TopHeader title="Validation Suite" />
         <header className="mb-12">
-          <div className="flex items-center gap-2 mb-3">
-            <span className="bg-sky-100 text-sky-700 px-2 py-1 rounded text-[10px] font-semibold uppercase tracking-widest">
-              QA / Validator Engine
-            </span>
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="bg-indigo-500/10 text-indigo-500 px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] shadow-sm">
+                QA / Validator Engine
+              </span>
+            </div>
+            <h1 className="text-6xl font-black text-foreground tracking-tighter leading-none italic">
+              System <br />{" "}
+              <span className="text-zinc-400 not-italic">Suite</span>
+            </h1>
+            <p className="text-muted-foreground text-xl mt-1 font-medium leading-relaxed max-w-lg">
+              Validate detection logic and clinical decision support against
+              <span className="text-foreground font-black ml-1">
+                standardized benchmarks.
+              </span>
+            </p>
           </div>
-          <h1 className="text-4xl font-bold text-slate-900 tracking-tight">
-            System Test Cases
-          </h1>
-          <p className="text-slate-500 text-lg mt-1 font-medium italic">
-            Validate detection logic and clinical decision support against
-            predefined benchmarks.
-          </p>
         </header>
 
         <div className="grid grid-cols-1 gap-8">
           {testCases.map((tc) => (
             <div
               key={tc.id}
-              className="bg-white rounded-[2.5rem] border-2 border-slate-50 shadow-xl overflow-hidden group hover:border-sky-100 transition-all"
+              className="box-premium rounded-[2.5rem] overflow-hidden group transition-all"
             >
               <div className="p-8 flex flex-col md:flex-row justify-between gap-8">
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-4">
-                    <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-sky-50 group-hover:text-sky-600 transition-colors">
+                    <div className="w-10 h-10 rounded-xl bg-background dark:bg-background flex items-center justify-center text-muted-foreground group-hover:bg-indigo-50 dark:bg-indigo-900/20 group-hover:text-indigo-600 dark:text-indigo-400 transition-colors">
                       <Terminal size={20} />
                     </div>
                     <div>
-                      <h3 className="text-xl font-bold text-slate-900">
+                      <h3 className="text-xl font-bold text-foreground dark:text-foreground">
                         {tc.name}
                       </h3>
-                      <span className="text-[10px] font-bold uppercase text-slate-400">
+                      <span className="text-[10px] font-bold uppercase text-muted-foreground">
                         Target: {tc.drug}
                       </span>
                     </div>
                   </div>
 
-                  <div className="bg-slate-900 rounded-2xl p-6 mb-6 font-mono text-xs text-sky-400 overflow-x-auto">
+                  <div className="bg-slate-900 dark:bg-slate-800 dark:bg-slate-800 rounded-2xl p-6 mb-6 font-mono text-xs text-sky-400 overflow-x-auto">
                     <pre>{tc.vcf}</pre>
                   </div>
 
                   <div className="flex flex-wrap gap-4">
-                    <div className="px-4 py-2 bg-slate-50 rounded-xl border border-slate-100 text-xs font-bold text-slate-500">
+                    <div className="px-4 py-2 bg-background dark:bg-background rounded-xl border border-border/50 dark:border-border/50 dark:border-border/50 text-xs font-bold text-muted-foreground dark:text-muted-foreground dark:text-muted-foreground">
                       Expected:{" "}
-                      <span className="text-slate-900">{tc.expectedLabel}</span>
+                      <span className="text-foreground dark:text-foreground">
+                        {tc.expectedLabel}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -214,7 +187,7 @@ export default function TestCasesPage() {
                 <div className="md:w-72 flex flex-col gap-4">
                   <button
                     onClick={() => runTest(tc.id)}
-                    className="w-full flex items-center justify-center gap-2 bg-slate-900 hover:bg-sky-600 text-white p-4 rounded-2xl font-bold shadow-lg transition-all active:scale-95"
+                    className="w-full flex items-center justify-center gap-2 bg-slate-900 dark:bg-slate-800 dark:bg-slate-800 hover:bg-indigo-600 dark:bg-indigo-500 text-white p-4 rounded-2xl font-bold shadow-lg transition-all active:scale-95 dark:shadow-none"
                   >
                     {runningId === tc.id ? (
                       <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
@@ -225,7 +198,7 @@ export default function TestCasesPage() {
                     )}
                   </button>
 
-                  <div className="bg-emerald-50 border border-emerald-100 p-4 rounded-2xl">
+                  <div className="bg-emerald-500/5 border border-emerald-500/10 p-4 rounded-2xl">
                     <div className="flex items-center gap-2 text-emerald-700 font-bold text-xs uppercase mb-2">
                       <CheckCircle2 size={14} /> Validation Success
                     </div>
@@ -238,14 +211,14 @@ export default function TestCasesPage() {
 
               {/* Collapsible Result Preview */}
               <div className="px-8 pb-8">
-                <div className="bg-slate-50 border border-slate-100 rounded-2xl p-6">
+                <div className="bg-muted/10 border border-foreground/5 rounded-2xl p-6">
                   <div className="flex justify-between items-center mb-4">
-                    <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">
+                    <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest">
                       Expected JSON Schema
                     </span>
                     <ChevronRight size={14} className="text-slate-300" />
                   </div>
-                  <pre className="text-[10px] text-slate-500 font-mono">
+                  <pre className="text-[10px] text-muted-foreground dark:text-muted-foreground dark:text-muted-foreground font-mono">
                     {JSON.stringify(tc.expectedResult, null, 2)}
                   </pre>
                 </div>
@@ -272,7 +245,7 @@ function NavItem({
   return (
     <button
       onClick={onClick}
-      className={`w-full flex items-center gap-4 px-4 py-4 rounded-[1.5rem] font-semibold text-sm transition-all duration-300 ${active ? "bg-slate-900 text-white shadow-xl shadow-slate-200 scale-[1.02]" : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"}`}
+      className={`w-full flex items-center gap-4 px-4 py-4 rounded-[1.5rem] font-semibold text-sm transition-all duration-300 ${active ? "bg-slate-900 dark:bg-slate-800 dark:bg-slate-800 text-white shadow-xl shadow-slate-200 scale-[1.02]" : "text-muted-foreground dark:text-muted-foreground dark:text-muted-foreground hover:bg-background dark:bg-background hover:text-foreground dark:text-foreground"}`}
     >
       {icon}
       {label}

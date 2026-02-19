@@ -1,100 +1,151 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.TARGET_VARIANTS = void 0;
-exports.parseVCFContent = parseVCFContent;
 // This file is a central repository for CPIC Gene Annotations
-exports.TARGET_VARIANTS = {
+export const TARGET_VARIANTS = {
     // CYP2D6 (Metabolism) - Vital for Codeine, Tamoxifen
-    "rs3892097": {
+    rs3892097: {
         gene: "CYP2D6",
         allele: "*4",
         impact: "loss_of_function",
+        evidenceLevel: "Level 1A",
+        confidenceScore: 0.99,
         phenotypeMap: {
             "0/0": "Normal Metabolizer",
             "0/1": "Intermediate Metabolizer",
-            "1/1": "Poor Metabolizer"
-        }
+            "1/1": "Poor Metabolizer",
+        },
     },
-    "rs1065852": {
+    rs1065852: {
         gene: "CYP2D6",
         allele: "*10",
         impact: "decreased_function",
+        evidenceLevel: "Level 1A",
+        confidenceScore: 0.95,
         phenotypeMap: {
             "0/0": "Normal Metabolizer",
             "0/1": "Intermediate Metabolizer",
-            "1/1": "Intermediate Metabolizer"
-        }
+            "1/1": "Intermediate Metabolizer",
+        },
     },
     // CYP2C19 (Plavix, SSRIs)
-    "rs12248560": {
+    rs12248560: {
         gene: "CYP2C19",
         allele: "*17",
         impact: "increased_function",
+        evidenceLevel: "Level 1A",
+        confidenceScore: 0.98,
         phenotypeMap: {
             "0/0": "Normal Metabolizer",
             "0/1": "Rapid Metabolizer",
-            "1/1": "Ultrarapid Metabolizer"
-        }
+            "1/1": "Ultrarapid Metabolizer",
+        },
     },
-    "rs4244285": {
+    rs4244285: {
         gene: "CYP2C19",
         allele: "*2",
         impact: "loss_of_function",
+        evidenceLevel: "Level 1A",
+        confidenceScore: 0.99,
         phenotypeMap: {
             "0/0": "Normal Metabolizer",
             "0/1": "Intermediate Metabolizer",
-            "1/1": "Poor Metabolizer"
-        }
+            "1/1": "Poor Metabolizer",
+        },
     },
     // CYP2C9 (Warfarin)
-    "rs1799853": {
+    rs1799853: {
         gene: "CYP2C9",
         allele: "*2",
         impact: "decreased_function",
+        evidenceLevel: "Level 1A",
+        confidenceScore: 0.97,
         phenotypeMap: {
             "0/0": "Normal Metabolizer",
             "0/1": "Intermediate Metabolizer",
-            "1/1": "Poor Metabolizer"
-        }
+            "1/1": "Poor Metabolizer",
+        },
     },
     // SLCO1B1 (Statins)
-    "rs4149056": {
+    rs4149056: {
         gene: "SLCO1B1",
         allele: "*5",
         impact: "decreased_function",
+        evidenceLevel: "Level 1A",
+        confidenceScore: 0.96,
         phenotypeMap: {
             "0/0": "Normal Function",
             "0/1": "Decreased Function",
-            "1/1": "Poor Function"
-        }
+            "1/1": "Poor Function",
+        },
     },
     // DPYD (Chemotherapy - 5-FU)
-    "rs3918290": {
+    rs3918290: {
         gene: "DPYD",
         allele: "*2A",
         impact: "loss_of_function",
+        evidenceLevel: "Level 1A",
+        confidenceScore: 0.99,
         phenotypeMap: {
             "0/0": "Normal Metabolizer",
             "0/1": "Intermediate Metabolizer",
-            "1/1": "Poor Metabolizer"
-        }
+            "1/1": "Poor Metabolizer",
+        },
     },
     // TPMT (Immunosuppressants)
-    "rs1142345": {
+    rs1142345: {
         gene: "TPMT",
         allele: "*3A",
         impact: "loss_of_function",
+        evidenceLevel: "Level 1A",
+        confidenceScore: 0.99,
         phenotypeMap: {
             "0/0": "Normal Metabolizer",
             "0/1": "Intermediate Metabolizer",
-            "1/1": "Poor Metabolizer"
-        }
-    }
+            "1/1": "Poor Metabolizer",
+        },
+    },
+    // VKORC1 (Warfarin Sensitivity)
+    rs9923231: {
+        gene: "VKORC1",
+        allele: "T",
+        impact: "sensitive",
+        evidenceLevel: "Level 1A",
+        confidenceScore: 0.99,
+        phenotypeMap: {
+            "0/0": "Normal Sensitivity",
+            "0/1": "Increased Sensitivity",
+            "1/1": "High Sensitivity",
+        },
+    },
+    // NUDT15 (Thiopurine Toxicity)
+    rs116855232: {
+        gene: "NUDT15",
+        allele: "T",
+        impact: "loss_of_function",
+        evidenceLevel: "Level 1A",
+        confidenceScore: 0.99,
+        phenotypeMap: {
+            "0/0": "Normal Metabolizer",
+            "0/1": "Intermediate Metabolizer",
+            "1/1": "Poor Metabolizer",
+        },
+    },
+    // CYP4F2 (Warfarin)
+    rs2108622: {
+        gene: "CYP4F2",
+        allele: "T",
+        impact: "decreased_function",
+        evidenceLevel: "Level 1A",
+        confidenceScore: 0.97,
+        phenotypeMap: {
+            "0/0": "Normal Metabolizer",
+            "0/1": "Intermediate Metabolizer",
+            "1/1": "Poor Metabolizer",
+        },
+    },
 };
 /**
-* Parses raw VCF string content into structured genetic data
-*/
-function parseVCFContent(vcfContent) {
+ * Parses raw VCF string content into structured genetic data
+ */
+export function parseVCFContent(vcfContent) {
     const lines = vcfContent.split(/\r?\n/);
     const foundVariants = {};
     for (const line of lines) {
@@ -103,7 +154,7 @@ function parseVCFContent(vcfContent) {
         const cols = line.split("\t");
         // VCF Standard: CHROM POS ID REF ALT QUAL FILTER INFO FORMAT SAMPLE
         const rsID = cols[2];
-        if (exports.TARGET_VARIANTS[rsID]) {
+        if (TARGET_VARIANTS[rsID]) {
             let genotype = "0/0"; // Default Wild Type
             if (cols[9]) {
                 // Genotype is GT field in Sample column (index 9)
@@ -117,7 +168,7 @@ function parseVCFContent(vcfContent) {
     const results = [];
     const processedGenes = new Set();
     // Iterate definition map to build complete report
-    for (const [rsID, info] of Object.entries(exports.TARGET_VARIANTS)) {
+    for (const [rsID, info] of Object.entries(TARGET_VARIANTS)) {
         const userGT = foundVariants[rsID] || "0/0";
         const phenotype = info.phenotypeMap[userGT] || "Normal Metabolizer";
         // Formulate display genotype (e.g., *1/*17)
@@ -131,14 +182,16 @@ function parseVCFContent(vcfContent) {
         // Logic: If we already have an entry for this gene, overwrite ONLY if new finding is more significant?
         // For simplicity in this robust backend, let's include all significant findings but deduplicate by gene for the dashboard view.
         // We will employ a "Priority" system: Poor > Int > Rapid > Normal
-        const existingIndex = results.findIndex(r => r.gene === info.gene);
+        const existingIndex = results.findIndex((r) => r.gene === info.gene);
         if (existingIndex === -1) {
             results.push({
                 gene: info.gene,
                 rsID: rsID,
                 genotype: displayGT,
                 phenotype: phenotype,
-                rawGT: userGT
+                rawGT: userGT,
+                confidenceScore: info.confidenceScore,
+                evidenceLevel: info.evidenceLevel
             });
         }
         else {
@@ -152,7 +205,7 @@ function parseVCFContent(vcfContent) {
                 "Intermediate Metabolizer": 3,
                 "Decreased Function": 3,
                 "Normal Metabolizer": 1,
-                "Normal Function": 1
+                "Normal Function": 1,
             };
             if ((priority[phenotype] || 0) > (priority[currentPheno] || 0)) {
                 results[existingIndex] = {
@@ -160,7 +213,9 @@ function parseVCFContent(vcfContent) {
                     rsID: rsID,
                     genotype: displayGT,
                     phenotype: phenotype,
-                    rawGT: userGT
+                    rawGT: userGT,
+                    confidenceScore: info.confidenceScore,
+                    evidenceLevel: info.evidenceLevel
                 };
             }
         }

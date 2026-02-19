@@ -18,13 +18,17 @@ import {
   BrainCircuit,
   Terminal,
   FlaskConical,
+  HelpCircle,
 } from "lucide-react";
-import { analyzeUniversalRisk } from "../../lib/risk-engine";
+import { TopHeader } from "../../components/header";
+import { Sidebar } from "../../components/sidebar";
+import { analyzeUniversalRisk, getDrugList } from "../../lib/risk-engine";
 
 export default function AnalysisPage() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [result, setResult] = useState<any>(null);
+  const [autoResults, setAutoResults] = useState<any[] | null>(null);
   const [profile, setProfile] = useState<any>(null);
 
   useEffect(() => {
@@ -91,15 +95,16 @@ export default function AnalysisPage() {
     let Icon = CheckCircle;
 
     if (worstRisk === "Critical") {
-      color = "text-rose-700 bg-rose-50 border-rose-200";
+      color = "text-rose-700 bg-rose-500/5 border-rose-500/10";
       statusText = "Critical Action Required";
       Icon = AlertCircle;
     } else if (worstRisk === "Monitor") {
-      color = "text-amber-700 bg-amber-50 border-amber-200";
+      color = "text-amber-700 bg-amber-500/5 border-amber-500/10";
       statusText = "Moderate Risk / Monitor";
       Icon = AlertCircle;
     } else if (worstRisk === "Unknown") {
-      color = "text-slate-600 bg-slate-50 border-slate-200";
+      color =
+        "text-slate-600 dark:text-muted-foreground dark:text-muted-foreground bg-background dark:bg-background border-border dark:border-border dark:border-border";
       statusText = "Not in Database";
       Icon = Info;
     }
@@ -118,6 +123,57 @@ export default function AnalysisPage() {
       aiExplanation: relevantExplanation,
       icon: Icon,
     });
+    setAutoResults(null);
+  };
+
+  const handleAutoAnalyze = () => {
+    if (!profile || !profile.pharmacogenomic_profile) {
+      alert("No genetic profile found. Please upload a specific VCF first.");
+      return;
+    }
+
+    const allDrugs = getDrugList();
+    const findings: any[] = [];
+
+    for (const d of allDrugs) {
+      const drugNameDisplay = d.charAt(0).toUpperCase() + d.slice(1);
+      const pgxProfile = profile.pharmacogenomic_profile || [];
+
+      for (const gene of pgxProfile) {
+        const analysis = analyzeUniversalRisk(d, gene.phenotype);
+        if (
+          analysis.assessment.includes("Toxic") ||
+          analysis.assessment.includes("🔴") ||
+          analysis.assessment.includes("Adjust") ||
+          analysis.assessment.includes("🟡") ||
+          analysis.assessment.includes("Monitor")
+        ) {
+          const isCritical =
+            analysis.assessment.includes("Toxic") ||
+            analysis.assessment.includes("🔴");
+          findings.push({
+            drug: drugNameDisplay,
+            riskLevel: isCritical ? "Critical" : "Monitor",
+            statusText: isCritical
+              ? "Critical Action Required"
+              : "Moderate Risk / Monitor",
+            color: isCritical
+              ? "text-rose-700 bg-rose-50 border-rose-200"
+              : "text-amber-700 bg-amber-50 border-amber-200",
+            recommendation: analysis.guidance,
+            relevantGene: gene.gene,
+          });
+          break;
+        }
+      }
+    }
+
+    // De-duplicate in case of multiple hits
+    const uniqueFindings = Array.from(
+      new Map(findings.map((item) => [item.drug, item])).values(),
+    );
+    setAutoResults(uniqueFindings);
+    setResult(null);
   };
 
   const handleNewUpload = () => {
@@ -126,67 +182,33 @@ export default function AnalysisPage() {
   };
 
   return (
-    <div className="flex min-h-screen bg-slate-50 font-sans text-slate-900">
-      {/* Sidebar */}
-      <aside className="w-64 bg-white border-r border-slate-200 flex-shrink-0 flex flex-col justify-between hidden md:flex sticky top-0 h-screen">
-        <div className="p-6">
-          <div className="flex items-center gap-3 mb-10 text-sky-600 font-semibold text-xl tracking-tight">
-            <div className="p-2 bg-sky-50 rounded-lg">
-              <Dna className="w-6 h-6" />
-            </div>
-            PharmaGuard
-          </div>
-
-          <nav className="space-y-1">
-            <button
-              onClick={() => router.push("/dashboard")}
-              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 hover:bg-slate-50 hover:text-slate-900 font-medium transition-colors"
-            >
-              <Activity className="w-5 h-5" />
-              Genetic Dashboard
-            </button>
-            <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg bg-sky-50 text-sky-700 font-medium transition-colors">
-              <Beaker className="w-5 h-5" />
-              Drug Analysis
-            </button>
-            <button
-              onClick={() => router.push("/files")}
-              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 hover:bg-slate-50 hover:text-slate-900 font-medium transition-colors"
-            >
-              <FileText className="w-5 h-5" />
-              Archive Registry
-            </button>
-            <button
-              onClick={() => router.push("/test-cases")}
-              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 hover:bg-slate-50 hover:text-slate-900 font-medium transition-colors"
-            >
-              <FlaskConical className="w-5 h-5" />
-              Validation Suite
-            </button>
-          </nav>
-        </div>
-      </aside>
+    <div className="flex min-h-screen bg-background font-sans text-foreground selection:bg-indigo-100 transition-colors duration-500">
+      <Sidebar />
 
       {/* Main Content Area */}
       <main className="flex-1 p-8 lg:p-12 overflow-y-auto w-full">
+        <TopHeader title="Evidence Console" />
         <header className="mb-12 flex flex-col md:flex-row justify-between items-end gap-6">
-          <div>
+          <div className="space-y-4">
             <div className="flex items-center gap-2 mb-3">
-              <span className="bg-sky-100 text-sky-700 px-2 py-1 rounded text-[10px] font-semibold uppercase tracking-widest">
+              <span className="bg-indigo-500/10 text-indigo-500 px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] shadow-sm">
                 Clinical Research Tool
               </span>
             </div>
-            <h2 className="text-4xl font-bold text-slate-900 tracking-tight">
-              Evidence Console
+            <h2 className="text-6xl font-black text-foreground tracking-tighter leading-none italic">
+              Evidence <br />{" "}
+              <span className="text-zinc-400 not-italic">Console</span>
             </h2>
-            <p className="text-slate-500 text-lg mt-1 font-medium italic">
-              Cross-reference medications against patient's unique genomic
-              biomarkers.
+            <p className="text-muted-foreground text-xl mt-1 font-medium leading-relaxed max-w-lg">
+              Cross-reference medications against unique patient
+              <span className="text-foreground font-black ml-1">
+                biological signatures.
+              </span>
             </p>
           </div>
           <button
             onClick={handleNewUpload}
-            className="flex items-center gap-2 px-6 py-3.5 rounded-2xl bg-white border-2 border-slate-100 text-slate-600 font-semibold hover:border-sky-200 hover:bg-sky-50 transition-all shadow-sm"
+            className="flex items-center gap-2 px-6 py-3.5 rounded-2xl bg-muted/20 border border-foreground/5 text-foreground font-semibold hover:bg-muted transition-all shadow-sm"
           >
             <Dna size={18} className="text-sky-500" /> New Patient
           </button>
@@ -194,22 +216,32 @@ export default function AnalysisPage() {
 
         {/* Search System */}
         <div className="relative mb-16 max-w-4xl group">
-          <div className="absolute inset-y-0 left-6 flex items-center pointer-events-none text-slate-400 group-focus-within:text-sky-600 transition-colors">
+          <div className="absolute inset-y-0 left-6 flex items-center pointer-events-none text-muted-foreground group-focus-within:text-indigo-600 dark:text-indigo-400 transition-colors">
             <Search size={28} />
           </div>
           <input
             type="text"
             placeholder="Search medication (e.g., Codeine, Warfarin, Abacavir)..."
-            className="w-full p-8 pl-16 rounded-[2.5rem] bg-white border-2 border-slate-50 shadow-2xl shadow-slate-200/50 focus:border-sky-500 focus:ring-8 focus:ring-sky-500/5 outline-none transition-all text-2xl font-semibold placeholder:text-slate-200"
+            className="w-full p-8 pl-16 rounded-[2.5rem] bg-muted/20 border border-foreground/5 shadow-2xl shadow-foreground/5 focus:border-indigo-500 focus:ring-8 focus:ring-indigo-500/5 outline-none transition-all text-2xl font-semibold placeholder:text-muted-foreground/30"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleSearch()}
           />
           <button
             onClick={handleSearch}
-            className="absolute right-4 top-4 bottom-4 px-10 bg-slate-900 text-white font-bold rounded-[1.8rem] hover:bg-sky-600 transition-all active:scale-95 shadow-lg shadow-slate-200"
+            className="absolute right-4 top-4 bottom-4 px-10 bg-slate-900 dark:bg-slate-800 dark:bg-slate-800 text-white font-bold rounded-[1.8rem] hover:bg-indigo-600 dark:bg-indigo-500 transition-all active:scale-95 shadow-lg shadow-slate-200 dark:shadow-none"
           >
             Analyze
+          </button>
+        </div>
+
+        <div className="mb-12 flex justify-center">
+          <button
+            onClick={handleAutoAnalyze}
+            className="bg-indigo-600 text-white px-10 py-5 rounded-[2rem] font-bold text-lg hover:bg-indigo-700 transition-all shadow-xl shadow-indigo-200 active:scale-95 flex items-center gap-3 dark:shadow-none"
+          >
+            <BrainCircuit className="w-6 h-6" /> Auto-Analyze Entire
+            Pharmacopeia Risk
           </button>
         </div>
 
@@ -217,7 +249,7 @@ export default function AnalysisPage() {
         {result ? (
           <div className="animate-in fade-in slide-in-from-bottom-8 duration-700 max-w-5xl space-y-8">
             <div
-              className={`p-10 rounded-[3rem] border-4 ${result.color} shadow-2xl shadow-sky-100/20`}
+              className={`p-10 rounded-[3rem] border border-foreground/5 ${result.color} shadow-2xl shadow-indigo-500/5`}
             >
               <div className="flex flex-col md:flex-row justify-between items-start gap-8">
                 <div className="space-y-2">
@@ -233,57 +265,60 @@ export default function AnalysisPage() {
                       {result.statusText}
                     </span>
                   </div>
-                  <h2 className="text-6xl font-bold tracking-tighter text-slate-900">
+                  <h2 className="text-6xl font-bold tracking-tighter text-foreground dark:text-foreground">
                     {result.drug}
                   </h2>
                   <div className="flex items-center gap-2 pt-2">
-                    <ShieldCheck className="text-sky-600" size={16} />
-                    <span className="text-xs font-semibold text-slate-400">
+                    <ShieldCheck
+                      className="text-indigo-600 dark:text-indigo-400"
+                      size={16}
+                    />
+                    <span className="text-xs font-semibold text-muted-foreground">
                       Validated against PharmGKB v4.2
                     </span>
                   </div>
                 </div>
 
-                <div className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm min-w-[200px] flex flex-col items-center">
+                <div className="bg-card dark:bg-card dark:bg-card p-6 rounded-[2rem] border border-border/50 dark:border-border/50 dark:border-border/50 shadow-sm min-w-[200px] flex flex-col items-center dark:shadow-none">
                   <span className="text-[10px] font-bold text-slate-300 uppercase mb-1 tracking-widest">
                     Primary Gene
                   </span>
-                  <span className="text-2xl font-bold text-slate-800">
+                  <span className="text-2xl font-bold text-foreground dark:text-foreground">
                     {result.relevantGene}
                   </span>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-10 mt-12 pt-10 border-t border-slate-200/50">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-10 mt-12 pt-10 border-t border-border dark:border-border dark:border-border/50">
                 <div className="space-y-4">
-                  <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                  <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-2">
                     <CheckCircle size={14} className="text-sky-500" /> Clinical
                     Recommendation
                   </h4>
-                  <p className="text-2xl font-bold text-slate-800 leading-tight">
+                  <p className="text-2xl font-bold text-foreground dark:text-foreground leading-tight">
                     {result.recommendation}
                   </p>
                 </div>
                 <div className="space-y-4">
-                  <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                  <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-2">
                     <Terminal size={14} className="text-amber-500" />{" "}
                     Evidence-Based AI Rationale
                   </h4>
-                  <p className="text-lg font-medium text-slate-500 leading-relaxed italic border-l-4 border-slate-100 pl-6">
+                  <p className="text-lg font-medium text-muted-foreground dark:text-muted-foreground dark:text-muted-foreground leading-relaxed italic border-l-4 border-border/50 dark:border-border/50 dark:border-border/50 pl-6">
                     "{result.aiExplanation}"
                   </p>
                 </div>
               </div>
             </div>
 
-            <div className="bg-slate-900 p-8 rounded-[2rem] text-white flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl shadow-slate-200">
+            <div className="bg-foreground text-background p-8 rounded-[3rem] flex flex-col md:flex-row items-center justify-between gap-6 shadow-2xl shadow-foreground/10">
               <div className="flex items-center gap-6 text-center md:text-left">
-                <div className="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center border border-white/20">
+                <div className="w-16 h-16 bg-card dark:bg-card dark:bg-card/10 rounded-2xl flex items-center justify-center border border-white/20">
                   <Activity className="text-sky-400" size={32} />
                 </div>
                 <div>
                   <h4 className="text-xl font-bold">Pharmacist Action Alert</h4>
-                  <p className="text-slate-400 font-medium">
+                  <p className="text-muted-foreground font-medium">
                     Alternative path:{" "}
                     <span className="text-white font-semibold">
                       {result.alternative}
@@ -291,23 +326,61 @@ export default function AnalysisPage() {
                   </p>
                 </div>
               </div>
-              <button className="bg-sky-600 hover:bg-sky-500 text-white px-8 py-4 rounded-2xl font-bold transition-all active:scale-95 flex items-center gap-2 shadow-lg shadow-sky-600/30">
+              <button className="bg-indigo-600 dark:bg-indigo-500 hover:bg-sky-500 text-white px-8 py-4 rounded-2xl font-bold transition-all active:scale-95 flex items-center gap-2 shadow-lg shadow-sky-600/30 dark:shadow-none">
                 <Download size={20} /> Export Medical Notice
               </button>
             </div>
           </div>
+        ) : autoResults ? (
+          <div className="animate-in fade-in slide-in-from-bottom-8 duration-700 max-w-5xl">
+            <h3 className="text-2xl font-bold tracking-tight text-foreground dark:text-foreground mb-6 flex items-center gap-2">
+              <Zap className="text-amber-500" />
+              Identified Pharmacogenomic Risks ({autoResults.length})
+            </h3>
+
+            {autoResults.length === 0 ? (
+              <div className="p-10 rounded-[2rem] bg-emerald-50 border border-emerald-100 text-emerald-800 font-bold flex items-center gap-3">
+                <CheckCircle className="text-emerald-500" /> No actionable
+                high-risk interactions detected in your profile!
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {autoResults.map((res: any, idx: number) => (
+                  <div
+                    key={idx}
+                    className={`p-8 rounded-[2.5rem] border border-foreground/5 shadow-xl ${res.color}`}
+                  >
+                    <div className="flex justify-between items-start mb-4">
+                      <h4 className="text-3xl font-bold tracking-tight mb-2">
+                        {res.drug}
+                      </h4>
+                      <span className="bg-card dark:bg-card dark:bg-card/80 px-3 py-1 rounded-xl text-xs font-bold uppercase tracking-widest">
+                        {res.relevantGene} Variant
+                      </span>
+                    </div>
+                    <p className="text-sm font-semibold opacity-90 leading-relaxed mb-4 italic">
+                      {res.statusText}
+                    </p>
+                    <div className="bg-card dark:bg-card dark:bg-card/50 p-4 rounded-2xl border border-white/50 text-sm font-semibold">
+                      {res.recommendation}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         ) : (
-          <div className="mt-12 p-24 rounded-[3rem] border-4 border-dashed border-slate-100 bg-white/50 text-center">
-            <div className="w-24 h-24 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-8 border-2 border-white shadow-sm">
+          <div className="mt-12 p-24 rounded-[3rem] border border-dashed border-foreground/5 bg-muted/10 text-center">
+            <div className="w-24 h-24 bg-background dark:bg-background rounded-full flex items-center justify-center mx-auto mb-8 border-2 border-white shadow-sm dark:shadow-none">
               <Beaker size={48} className="text-slate-300" />
             </div>
-            <h3 className="text-3xl font-bold text-slate-800 mb-4 tracking-tighter">
+            <h3 className="text-3xl font-bold text-foreground dark:text-foreground mb-4 tracking-tighter">
               Ready for Clinical Query
             </h3>
-            <p className="text-slate-400 max-w-md mx-auto font-medium leading-relaxed">
+            <p className="text-muted-foreground max-w-md mx-auto font-medium leading-relaxed">
               Enter a medication name above to perform a real-time
               cross-reference against the patient's genetic profile and ClinPGx
-              evidence dataset.
+              evidence dataset, or Auto-Analyze all possible risks.
             </p>
           </div>
         )}

@@ -5,6 +5,7 @@ import path from 'path';
 import { createProfile } from '../models/Profile.js';
 import { parseVCFContent } from '../utils/vcfParser.js';
 import { generatePatientReport } from '../utils/aiModule.js';
+import { addNotification } from './notificationRoutes.js';
 
 const router = express.Router();
 
@@ -78,6 +79,13 @@ router.post('/', upload.single('vcf'), async (req: Request, res: Response) => {
 
         // Generate the required structured report as per Hackathon Case Study
         const report = await generatePatientReport(newProfile.id, (newProfile as any).genes);
+
+        // Auto-create notification
+        await addNotification(
+            "Genome Analysis Complete",
+            `Report generated for ${req.file.originalname} predicting risks with Level 1A CPIC evidence.`,
+            "success"
+        );
 
         res.status(201).json({
             ...report

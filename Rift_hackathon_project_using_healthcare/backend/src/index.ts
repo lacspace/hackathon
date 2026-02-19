@@ -67,6 +67,14 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 // Routes
 app.use('/api/upload', uploadRoutes);
 app.use('/api/profile', profileRoutes);
+import healthRoutes from './routes/healthRoutes.js';
+app.use('/api/health', healthRoutes);
+import aiRoutes from './routes/aiRoutes.js';
+app.use('/api/ai', aiRoutes);
+import authRoutes from './routes/authRoutes.js';
+app.use('/api/auth', authRoutes);
+import notificationRoutes from './routes/notificationRoutes.js';
+app.use('/api/notifications', notificationRoutes);
 
 // Health Check
 app.get('/', (req: Request, res: Response) => {
@@ -87,7 +95,11 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
 
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => {
-    console.log(`\n🚀 Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
-    console.log(`📄 Documentation available at http://localhost:${PORT}/api-docs\n`);
-});
+if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
+    app.listen(PORT, () => {
+        console.log(`\n🚀 Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
+        console.log(`📄 Documentation available at http://localhost:${PORT}/api-docs\n`);
+    });
+}
+
+export default app;

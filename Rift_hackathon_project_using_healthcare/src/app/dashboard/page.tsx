@@ -14,12 +14,13 @@ import {
   ClipboardCheck,
   BrainCircuit,
   ShieldCheck,
-  LayoutDashboard,
   Timer,
-  Microscope,
   Stethoscope,
-  FlaskConical,
+  Microscope,
 } from "lucide-react";
+import { TopHeader } from "../../components/header";
+import { Sidebar } from "../../components/sidebar";
+import { API_BASE_URL } from "../../lib/constants";
 
 interface GeneDisplay {
   name: string;
@@ -36,6 +37,35 @@ export default function DashboardPage() {
   const [report, setReport] = useState<any>(null);
   const [uiGenes, setUiGenes] = useState<GeneDisplay[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isAiLoading, setIsAiLoading] = useState(false);
+  const [aiMarkerInsight, setAiMarkerInsight] = useState<string | null>(null);
+
+  const handleAnalyzeMarkers = async () => {
+    if (!uiGenes || uiGenes.length === 0) return;
+    setIsAiLoading(true);
+    setAiMarkerInsight(null);
+    try {
+      const prompt = `Please provide a brief, professional clinical overview of these genetic markers found in a patient's PGx profile, emphasizing any high-risk variations based on CPIC guidelines: ${JSON.stringify(uiGenes)}`;
+
+      const res = await fetch(`${API_BASE_URL}/ai/ask`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question: prompt }),
+      });
+      const data = await res.json();
+      if (data.answer) {
+        setAiMarkerInsight(data.answer);
+      } else {
+        setAiMarkerInsight(
+          "I'm sorry, I couldn't generate an analysis for these markers.",
+        );
+      }
+    } catch (err) {
+      setAiMarkerInsight("Failed to connect to PharmaGuard AI.");
+    } finally {
+      setIsAiLoading(false);
+    }
+  };
 
   useEffect(() => {
     const data = localStorage.getItem("geneticProfile");
@@ -92,10 +122,10 @@ export default function DashboardPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50 text-slate-900 selection:bg-sky-100">
+      <div className="min-h-screen flex items-center justify-center bg-background dark:bg-background text-foreground dark:text-foreground selection:bg-sky-100">
         <div className="flex flex-col items-center gap-6">
           <div className="w-16 h-16 border-8 border-sky-100 border-t-sky-600 rounded-full animate-spin"></div>
-          <p className="text-slate-500 font-semibold uppercase tracking-widest text-sm">
+          <p className="text-muted-foreground dark:text-muted-foreground dark:text-muted-foreground font-semibold uppercase tracking-widest text-sm">
             Decoding Patient Genome...
           </p>
         </div>
@@ -105,20 +135,20 @@ export default function DashboardPage() {
 
   if (!report) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 p-6 text-center">
-        <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center mb-8 shadow-xl">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-background dark:bg-background p-6 text-center">
+        <div className="w-24 h-24 bg-card dark:bg-card dark:bg-card rounded-full flex items-center justify-center mb-8 shadow-xl dark:shadow-none">
           <Dna className="w-12 h-12 text-slate-300" />
         </div>
-        <h1 className="text-3xl font-bold text-slate-800 mb-4 tracking-tighter">
+        <h1 className="text-3xl font-bold text-foreground dark:text-foreground mb-4 tracking-tighter">
           No Active Patient Profile
         </h1>
-        <p className="text-slate-500 max-w-md mx-auto mb-10 font-medium leading-relaxed">
+        <p className="text-muted-foreground dark:text-muted-foreground dark:text-muted-foreground max-w-md mx-auto mb-10 font-medium leading-relaxed">
           Please upload a genomic sequence file (VCF) to generate a precision
           medicine report.
         </p>
         <button
           onClick={() => router.push("/")}
-          className="bg-sky-600 hover:bg-sky-700 text-white px-10 py-4 rounded-2xl font-bold shadow-xl shadow-sky-100 transition-all active:scale-95"
+          className="bg-indigo-600 dark:bg-indigo-500 hover:bg-sky-700 text-white px-10 py-4 rounded-2xl font-bold shadow-xl shadow-indigo-100 transition-all active:scale-95 dark:shadow-none"
         >
           Begin New Analysis
         </button>
@@ -132,111 +162,87 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="flex min-h-screen bg-slate-50 font-sans text-slate-900 selection:bg-sky-100">
-      {/* Sidebar - Premium Minimalist */}
-      <aside className="w-72 bg-white border-r border-slate-200 flex-shrink-0 flex flex-col justify-between hidden lg:flex sticky top-0 h-screen">
-        <div className="p-8">
-          <div className="flex items-center gap-3 mb-12">
-            <div className="p-2.5 bg-sky-600 rounded-xl shadow-lg shadow-sky-100 text-white">
-              <Dna className="w-6 h-6" />
-            </div>
-            <span className="text-2xl font-bold tracking-tighter">
-              PharmaGuard
-            </span>
-          </div>
-
-          <nav className="space-y-2">
-            <p className="px-4 text-[10px] font-semibold text-slate-400 uppercase tracking-[0.2em] mb-4">
-              Registry Control
-            </p>
-            <NavItem
-              icon={<LayoutDashboard size={20} />}
-              label="Patient Dashboard"
-              active
-            />
-            <NavItem
-              icon={<Beaker size={20} />}
-              label="Evidence Console"
-              onClick={() => router.push("/analysis")}
-            />
-            <NavItem
-              icon={<FileText size={20} />}
-              label="Archive Registry"
-              onClick={() => router.push("/files")}
-            />
-            <NavItem
-              icon={<FlaskConical size={20} />}
-              label="Validation Suite"
-              onClick={() => router.push("/test-cases")}
-            />
-            <div className="pt-8 mt-8 border-t border-slate-100">
-              <button
-                onClick={handleNewUpload}
-                className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-rose-600 hover:bg-rose-50 font-semibold transition-all"
-              >
-                <Trash2 size={20} />
-                Reset Session
-              </button>
-            </div>
-          </nav>
-        </div>
-
-        <div className="p-8 border-t border-slate-100">
-          <div className="bg-slate-50 p-5 rounded-[2rem] border border-slate-100">
-            <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest block mb-2">
-              Protocol Status
-            </span>
-            <div className="flex items-center gap-3">
-              <div className="flex gap-1">
-                <span className="w-2 h-2 bg-emerald-500 rounded-full"></span>
-                <span className="w-2 h-2 bg-emerald-500/30 rounded-full"></span>
-              </div>
-              <span className="text-sm font-semibold text-slate-700 uppercase tracking-tighter italic">
-                Live / Decrypted
-              </span>
-            </div>
-          </div>
-        </div>
-      </aside>
+    <div className="flex min-h-screen bg-background font-sans text-foreground selection:bg-indigo-100 transition-colors duration-500">
+      <Sidebar />
 
       {/* Main Content Area */}
       <main className="flex-1 p-8 xl:p-16 overflow-y-auto w-full">
+        <TopHeader title="Patient Dashboard" />
+
         {/* Header Section */}
         <header className="flex flex-col xl:flex-row xl:items-end justify-between gap-8 mb-16">
-          <div className="space-y-4">
+          <div className="space-y-6">
             <div className="flex flex-wrap items-center gap-3">
-              <div className="flex items-center gap-2 bg-slate-900 text-white px-3 py-1.5 rounded-xl text-[10px] font-semibold uppercase tracking-widest shadow-lg shadow-slate-200">
-                <Timer size={14} className="text-sky-400" /> Real-time Report
+              <div className="flex items-center gap-2 bg-foreground text-background px-4 py-2 rounded-2xl text-[10px] font-bold uppercase tracking-widest shadow-xl shadow-foreground/10">
+                <Timer size={14} className="text-indigo-400" /> Live Genetic
+                Stream
               </div>
-              <div className="bg-white border border-slate-200 px-3 py-1.5 rounded-xl text-[10px] font-semibold text-slate-500 uppercase tracking-widest">
-                UID: {report.patient_id?.slice(0, 35) || "Unknown"}
+              <div className="bg-card border border-border px-4 py-2 rounded-2xl text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                UID: {report.patient_id?.slice(0, 20) || "PGX-77"}
               </div>
             </div>
-            <h1 className="text-5xl font-bold text-slate-900 tracking-tighter leading-none">
-              Patient Clinical Summary
+            <h1 className="text-6xl font-black text-foreground tracking-tighter leading-[0.8] mb-2">
+              Clinical <br />{" "}
+              <span className="text-indigo-500 font-black">Summary</span>
             </h1>
-            <p className="text-xl text-slate-500 font-medium">
-              Precision health profile for{" "}
-              <span className="text-slate-900 font-bold italic">
-                {report.name || "Patient"}
+            <p className="text-xl text-muted-foreground font-medium max-w-xl leading-relaxed">
+              Synthesized precision data for patient
+              <span className="text-foreground font-extrabold ml-1 px-2 py-0.5 bg-indigo-500/10 rounded-lg">
+                {report.name || "Unknown Patient"}
               </span>
             </p>
           </div>
 
           <div className="flex items-center gap-6">
             <div
-              className={`p-6 rounded-[2.5rem] border-4 flex flex-col items-center justify-center min-w-[160px] shadow-xl ${report.risk_assessment?.overall_risk_score > 50 ? "border-rose-200 bg-white text-rose-700 shadow-rose-100/50" : "border-emerald-200 bg-white text-emerald-700 shadow-emerald-100/50"}`}
+              className={`relative overflow-hidden p-6 rounded-[3rem] border border-foreground/5 flex flex-col items-center justify-center min-w-[220px] transition-all duration-500 bg-card ${
+                (report.risk_assessment?.overall_risk_score || 0) > 50
+                  ? "text-rose-500"
+                  : "text-emerald-500"
+              } shadow-2xl shadow-foreground/5 dark:shadow-none`}
             >
-              <span className="text-[10px] font-semibold uppercase tracking-widest mb-1 opacity-60">
-                Risk Index
+              <div className="absolute inset-0 opacity-[0.03] pointer-events-none">
+                <svg className="w-full h-full" viewBox="0 0 100 100">
+                  <circle
+                    cx="50"
+                    cy="50"
+                    r="40"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="8"
+                    strokeDasharray="6 4"
+                  />
+                </svg>
+              </div>
+              <span className="text-[10px] font-black uppercase tracking-[0.4em] mb-4 opacity-50 relative z-10 text-center">
+                Clinical Risk Index
               </span>
-              <span className="text-4xl font-bold leading-none">
-                {report.risk_assessment?.overall_risk_score || "N/A"}
-              </span>
+              <div className="relative flex items-end justify-center mb-1">
+                <span className="text-7xl font-black tracking-tighter leading-none relative z-10">
+                  {report.risk_assessment?.overall_risk_score ?? "0"}
+                </span>
+                <span className="text-sm font-bold opacity-30 mb-2 ml-1">
+                  /100
+                </span>
+              </div>
+              <div className="flex flex-col items-center gap-2 relative z-10">
+                <div className="flex items-center gap-1.5 px-3 py-1 bg-foreground/5 rounded-full text-[9px] font-black uppercase tracking-widest">
+                  <ShieldCheck size={12} />
+                  {(report.risk_assessment?.overall_risk_score || 0) > 50
+                    ? "High Priority"
+                    : "Standard Profile"}
+                </div>
+                {report.risk_assessment?.high_risk_variants_count > 0 && (
+                  <span className="text-[9px] font-extrabold text-rose-600 dark:text-rose-400 uppercase tracking-tighter">
+                    {report.risk_assessment.high_risk_variants_count} Actionable
+                    Variants Found
+                  </span>
+                )}
+              </div>
             </div>
             <button
               onClick={() => router.push("/analysis")}
-              className="group relative flex items-center justify-center gap-3 bg-slate-900 hover:bg-sky-600 text-white h-24 px-10 rounded-[2.5rem] font-bold text-lg transition-all shadow-2xl shadow-slate-200 hover:translate-y-[-4px]"
+              className="group relative flex items-center justify-center gap-3 bg-slate-900 dark:bg-slate-800 dark:bg-slate-800 hover:bg-indigo-600 dark:bg-indigo-500 text-white h-24 px-10 rounded-[2.5rem] font-bold text-lg transition-all shadow-2xl shadow-slate-200 hover:translate-y-[-4px] dark:shadow-none"
             >
               Start Analysis{" "}
               <ArrowRight className="w-6 h-6 group-hover:translate-x-2 transition-transform" />
@@ -247,7 +253,9 @@ export default function DashboardPage() {
         {/* AI Analysis Panels */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
           <Panel
-            icon={<BrainCircuit className="text-sky-600" />}
+            icon={
+              <BrainCircuit className="text-indigo-600 dark:text-indigo-400" />
+            }
             title="Biological Perspective"
             content={
               report.llm_generated_explanation?.biological_explanation ||
@@ -288,75 +296,103 @@ export default function DashboardPage() {
 
         {/* Genetic Markers Grid */}
         <section className="mb-16">
-          <div className="flex items-center justify-between mb-8">
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-4">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-sky-100 rounded-lg text-sky-700">
                 <Microscope size={20} />
               </div>
-              <h2 className="text-2xl font-bold text-slate-800 tracking-tight text-teal-800">
+              <h2 className="text-2xl font-bold text-foreground dark:text-foreground tracking-tight text-teal-800">
                 Marker Identification
               </h2>
+              <div className="px-4 py-1.5 bg-muted/20 rounded-full border border-foreground/5 text-[10px] font-semibold text-muted-foreground uppercase tracking-[0.2em] shadow-sm ml-2">
+                {uiGenes.length} Markers Logged
+              </div>
             </div>
-            <div className="px-5 py-2 bg-white rounded-full border border-slate-200 text-[10px] font-semibold text-slate-400 uppercase tracking-[0.2em] shadow-sm">
-              {uiGenes.length} Markers Logged
-            </div>
+            <button
+              onClick={handleAnalyzeMarkers}
+              disabled={isAiLoading || uiGenes.length === 0}
+              className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-2xl font-bold transition-all shadow-md active:scale-95 disabled:opacity-50 dark:shadow-none"
+            >
+              <BrainCircuit className="w-5 h-5" />
+              {isAiLoading ? "Analyzing Markers..." : "Deep AI Marker Analysis"}
+            </button>
           </div>
 
+          {aiMarkerInsight && (
+            <div className="mb-8 p-8 bg-indigo-500/5 border border-indigo-500/10 rounded-[2.5rem] shadow-inner text-indigo-900 dark:text-indigo-100 animate-in fade-in slide-in-from-top-4 transition-colors">
+              <h4 className="text-sm font-bold uppercase tracking-widest text-indigo-700 dark:text-indigo-400 mb-3 flex items-center gap-2">
+                <BrainCircuit size={18} />
+                AI Genotype Insight
+              </h4>
+              <p className="font-medium leading-relaxed text-indigo-800/90 dark:text-indigo-200/90 whitespace-pre-wrap text-sm md:text-base">
+                {aiMarkerInsight}
+              </p>
+            </div>
+          )}
+
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-8">
-            {uiGenes.map((gene, idx) => (
-              <div
-                key={idx}
-                className={`group relative overflow-hidden bg-white p-8 rounded-[2.5rem] border-2 transition-all duration-500 hover:shadow-2xl hover:translate-y-[-8px] ${gene.color.split(" ")[2]}`}
-              >
-                <div className="flex justify-between items-start mb-6">
-                  <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-300 font-mono">
-                    {gene.rsID}
-                  </span>
-                  <div
-                    className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-transform group-hover:rotate-12 ${gene.color.split(" ")[1]} shadow-sm`}
-                  >
-                    <Zap className={`w-6 h-6 ${gene.color.split(" ")[0]}`} />
+            {uiGenes.map((gene, idx) => {
+              // Extract original colors and adapt them for dark mode conditionally.
+              const baseColor = gene.color;
+              // we can just stick to `bg-card dark:bg-card dark:bg-card dark:bg-card` for the card for simplicity,
+              // but standard dynamic Tailwind class strings injected from backend are tricky.
+              return (
+                <div
+                  key={idx}
+                  className={`group relative overflow-hidden box-premium p-8 rounded-[2.5rem] transition-all duration-500 hover:shadow-2xl hover:translate-y-[-8px]`}
+                >
+                  <div className="flex justify-between items-start mb-6">
+                    <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-300 dark:text-muted-foreground font-mono">
+                      {gene.rsID}
+                    </span>
+                    <div
+                      className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-transform group-hover:rotate-12 bg-background dark:bg-background dark:bg-slate-800 shadow-sm`}
+                    >
+                      <Zap
+                        className={`w-6 h-6 text-muted-foreground dark:text-muted-foreground`}
+                      />
+                    </div>
+                  </div>
+
+                  <h3 className="text-3xl font-bold text-foreground dark:text-foreground dark:text-foreground mb-1 tracking-tighter">
+                    {gene.name}
+                  </h3>
+                  <p className="text-sm font-medium text-muted-foreground dark:text-muted-foreground dark:text-muted-foreground/80 dark:text-muted-foreground mb-6 italic leading-relaxed">
+                    {gene.status}
+                  </p>
+
+                  <div className="mt-auto pt-6 border-t border-foreground/5 flex items-center justify-between">
+                    <div
+                      className={`inline-flex items-center px-3 py-1.5 rounded-xl text-[11px] font-semibold uppercase tracking-widest bg-muted/50 text-foreground border border-foreground/5`}
+                    >
+                      {gene.risk}
+                    </div>
+                    <div className="text-right">
+                      <p className="text-[10px] font-semibold text-slate-300 dark:text-muted-foreground uppercase leading-none mb-1">
+                        Conf.
+                      </p>
+                      <p className="text-sm font-semibold text-slate-700 dark:text-slate-300 dark:text-slate-300 dark:text-slate-300">
+                        {(gene.confidence * 100).toFixed(0)}%
+                      </p>
+                    </div>
                   </div>
                 </div>
-
-                <h3 className="text-3xl font-bold text-slate-900 mb-1 tracking-tighter">
-                  {gene.name}
-                </h3>
-                <p className="text-sm font-medium text-slate-500/80 mb-6 italic leading-relaxed">
-                  {gene.status}
-                </p>
-
-                <div className="mt-auto pt-6 border-t border-slate-100/50 flex items-center justify-between">
-                  <div
-                    className={`inline-flex items-center px-3 py-1.5 rounded-xl text-[11px] font-semibold uppercase tracking-widest border ${gene.color}`}
-                  >
-                    {gene.risk}
-                  </div>
-                  <div className="text-right">
-                    <p className="text-[10px] font-semibold text-slate-300 uppercase leading-none mb-1">
-                      Conf.
-                    </p>
-                    <p className="text-sm font-semibold text-slate-700">
-                      {(gene.confidence * 100).toFixed(0)}%
-                    </p>
-                  </div>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </section>
 
         {/* Clinical Actions Table */}
-        <section className="bg-white rounded-[3rem] border-2 border-slate-50 shadow-2xl shadow-slate-200/50 overflow-hidden">
+        <section className="box-premium rounded-[3rem] overflow-hidden">
           <div className="p-8 pb-4 flex items-center gap-4">
             <div className="p-3 bg-rose-50 rounded-2xl text-rose-600">
               <AlertTriangle size={24} />
             </div>
             <div>
-              <h3 className="text-2xl font-bold text-slate-900 tracking-tight">
+              <h3 className="text-2xl font-bold text-foreground dark:text-foreground tracking-tight">
                 Immediate Clinical Directives
               </h3>
-              <p className="text-slate-400 font-medium text-sm">
+              <p className="text-muted-foreground font-medium text-sm">
                 Actionable drug alerts for current patient metabolic status.
               </p>
             </div>
@@ -365,7 +401,7 @@ export default function DashboardPage() {
           <div className="overflow-x-auto p-4">
             <table className="w-full text-left">
               <thead>
-                <tr className="text-[10px] uppercase font-semibold tracking-[0.2em] text-slate-400">
+                <tr className="text-[10px] uppercase font-semibold tracking-[0.2em] text-muted-foreground">
                   <th className="px-6 py-6">Molecules</th>
                   <th className="px-6 py-6">Directive</th>
                   <th className="px-6 py-6">Scientific Rationale</th>
@@ -377,14 +413,14 @@ export default function DashboardPage() {
                   (rec: any, idx: number) => (
                     <tr
                       key={idx}
-                      className="group hover:bg-slate-50/50 transition-colors"
+                      className="group hover:bg-background dark:bg-background/50 transition-colors"
                     >
                       <td className="px-6 py-8">
                         <div className="flex flex-col">
-                          <span className="text-xl font-bold text-slate-800">
+                          <span className="text-xl font-bold text-foreground dark:text-foreground">
                             {rec.drug}
                           </span>
-                          <span className="text-[10px] font-semibold text-sky-600 uppercase tracking-widest">
+                          <span className="text-[10px] font-semibold text-indigo-600 dark:text-indigo-400 uppercase tracking-widest">
                             Level 1A Evidence
                           </span>
                         </div>
@@ -396,10 +432,10 @@ export default function DashboardPage() {
                           {rec.action || "In Review"}
                         </span>
                       </td>
-                      <td className="px-6 py-8 text-slate-500 font-medium leading-relaxed max-w-lg italic">
+                      <td className="px-6 py-8 text-muted-foreground dark:text-muted-foreground dark:text-muted-foreground font-medium leading-relaxed max-w-lg italic">
                         {rec.reason}
                       </td>
-                      <td className="px-6 py-8 font-bold text-slate-800">
+                      <td className="px-6 py-8 font-bold text-foreground dark:text-foreground">
                         {rec.alternative ? (
                           <span className="flex items-center gap-2 text-sky-700">
                             <CheckCircle2 size={16} /> {rec.alternative}
@@ -414,8 +450,8 @@ export default function DashboardPage() {
               </tbody>
             </table>
           </div>
-          <div className="p-6 bg-slate-50 text-center">
-            <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-[0.3em]">
+          <div className="p-6 bg-background dark:bg-background text-center">
+            <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-[0.3em]">
               Verified Source:{" "}
               {report.llm_generated_explanation?.evidence_citation || "Unknown"}
             </span>
@@ -440,7 +476,7 @@ function NavItem({
   return (
     <button
       onClick={onClick}
-      className={`w-full flex items-center gap-4 px-4 py-4 rounded-[1.5rem] font-semibold text-sm transition-all duration-300 ${active ? "bg-slate-900 text-white shadow-xl shadow-slate-200 scale-[1.02]" : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"}`}
+      className={`w-full flex items-center gap-4 px-4 py-4 rounded-[1.5rem] font-semibold text-sm transition-all duration-300 ${active ? "bg-slate-900 dark:bg-slate-800 dark:bg-slate-800 dark:bg-card text-white dark:text-foreground shadow-xl shadow-slate-200 dark:shadow-none scale-[1.02]" : "text-muted-foreground dark:text-muted-foreground dark:text-muted-foreground dark:text-muted-foreground hover:bg-background dark:bg-background dark:hover:bg-slate-800 hover:text-foreground dark:text-foreground dark:hover:text-white"}`}
     >
       {icon}
       {label}
@@ -464,16 +500,19 @@ function Panel({
   theme: string;
 }) {
   const themes: any = {
-    sky: "bg-sky-50/50 border-sky-100 shadow-sky-100/20 text-sky-900",
-    amber: "bg-amber-50/50 border-amber-100 shadow-amber-100/20 text-amber-900",
-    emerald:
-      "bg-emerald-50/50 border-emerald-100 shadow-emerald-100/20 text-emerald-900",
+    sky: "bg-indigo-500/5 text-indigo-900 dark:text-indigo-100",
+    amber: "bg-amber-500/5 text-amber-900 dark:text-amber-100",
+    emerald: "bg-emerald-500/5 text-emerald-900 dark:text-emerald-100",
   };
 
   return (
-    <div className={`p-8 rounded-[2.5rem] border-2 shadow-xl ${themes[theme]}`}>
+    <div
+      className={`p-10 rounded-[2.5rem] box-premium transition-all duration-300 ${themes[theme]}`}
+    >
       <div className="flex items-center gap-3 mb-6">
-        <div className="p-2.5 bg-white rounded-2xl shadow-sm">{icon}</div>
+        <div className="p-2.5 bg-card dark:bg-card dark:bg-card rounded-2xl shadow-sm dark:shadow-none">
+          {icon}
+        </div>
         <h4 className="text-sm font-bold uppercase tracking-widest">{title}</h4>
       </div>
       {isMetrics ? (
@@ -481,12 +520,12 @@ function Panel({
           {metrics.map((m, i) => (
             <div
               key={i}
-              className="flex justify-between items-center bg-white/50 p-3 rounded-2xl border border-white/50"
+              className="flex justify-between items-center bg-card dark:bg-card dark:bg-card/50 p-3 rounded-2xl border border-white/50"
             >
-              <span className="text-xs font-semibold text-slate-500">
+              <span className="text-xs font-semibold text-muted-foreground dark:text-muted-foreground dark:text-muted-foreground">
                 {m.label}
               </span>
-              <span className="text-sm font-bold text-slate-800">
+              <span className="text-sm font-bold text-foreground dark:text-foreground">
                 {m.value}
               </span>
             </div>
@@ -516,5 +555,71 @@ function CheckCircle2({ size }: { size: number }) {
     >
       <path d="M20 6 9 17l-5-5" />
     </svg>
+  );
+}
+
+function DatabaseStatusIndicator() {
+  const [status, setStatus] = useState<"connecting" | "live" | "offline">(
+    "connecting",
+  );
+
+  useEffect(() => {
+    const checkStatus = async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/health`);
+        if (res.ok) {
+          setStatus("live");
+        } else {
+          setStatus("offline");
+        }
+      } catch (err) {
+        setStatus("offline");
+      }
+    };
+
+    checkStatus();
+    const interval = setInterval(checkStatus, 30000); // Check every 30s
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div className="bg-muted/10 p-5 rounded-[2rem] border border-foreground/5 flex items-center justify-between">
+      <div>
+        <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest block mb-1">
+          DB STATUS
+        </span>
+        <div className="flex items-center gap-2">
+          {status === "live" ? (
+            <>
+              <div className="flex gap-1">
+                <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
+                <span className="w-2 h-2 bg-emerald-500/30 rounded-full"></span>
+              </div>
+              <span className="text-sm font-semibold text-slate-700 dark:text-slate-300 dark:text-slate-300 uppercase tracking-tighter italic whitespace-nowrap">
+                Live / Active
+              </span>
+            </>
+          ) : status === "connecting" ? (
+            <>
+              <div className="flex gap-1">
+                <span className="w-2 h-2 bg-amber-500 rounded-full animate-ping"></span>
+              </div>
+              <span className="text-sm font-semibold text-muted-foreground dark:text-muted-foreground dark:text-muted-foreground uppercase tracking-tighter italic whitespace-nowrap">
+                Connecting...
+              </span>
+            </>
+          ) : (
+            <>
+              <div className="flex gap-1">
+                <span className="w-2 h-2 bg-rose-500 rounded-full"></span>
+              </div>
+              <span className="text-sm font-semibold text-rose-700 uppercase tracking-tighter italic whitespace-nowrap">
+                Offline
+              </span>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
   );
 }

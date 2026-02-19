@@ -158,7 +158,7 @@ export async function generatePatientReport(profileId: string, genes: any[]): Pr
  */
 function callGeminiAPI(apiKey: string, prompt: string): Promise<any> {
     return new Promise((resolve, reject) => {
-        const url = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
         const payload = JSON.stringify({
             contents: [{ parts: [{ text: prompt }] }]
         });

@@ -1,0 +1,15 @@
+node_modules
+.next
+backend/node_modules
+uploads
+data
+guidelineAnnotations.json
+*.vcf
+*.json
+!package.json
+!package-lock.json
+!tsconfig.json
+!next.config.ts
+!postcss.config.mjs
+!.env
+!backend/.env

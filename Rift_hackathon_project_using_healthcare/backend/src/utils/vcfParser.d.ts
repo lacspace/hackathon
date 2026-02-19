@@ -3,6 +3,8 @@ export declare const TARGET_VARIANTS: {
         gene: string;
         allele: string;
         impact: string;
+        evidenceLevel: string;
+        confidenceScore: number;
         phenotypeMap: {
             "0/0": string;
             "0/1": string;
@@ -13,6 +15,8 @@ export declare const TARGET_VARIANTS: {
         gene: string;
         allele: string;
         impact: string;
+        evidenceLevel: string;
+        confidenceScore: number;
         phenotypeMap: {
             "0/0": string;
             "0/1": string;
@@ -23,6 +27,8 @@ export declare const TARGET_VARIANTS: {
         gene: string;
         allele: string;
         impact: string;
+        evidenceLevel: string;
+        confidenceScore: number;
         phenotypeMap: {
             "0/0": string;
             "0/1": string;
@@ -33,6 +39,8 @@ export declare const TARGET_VARIANTS: {
         gene: string;
         allele: string;
         impact: string;
+        evidenceLevel: string;
+        confidenceScore: number;
         phenotypeMap: {
             "0/0": string;
             "0/1": string;
@@ -43,6 +51,8 @@ export declare const TARGET_VARIANTS: {
         gene: string;
         allele: string;
         impact: string;
+        evidenceLevel: string;
+        confidenceScore: number;
         phenotypeMap: {
             "0/0": string;
             "0/1": string;
@@ -53,6 +63,8 @@ export declare const TARGET_VARIANTS: {
         gene: string;
         allele: string;
         impact: string;
+        evidenceLevel: string;
+        confidenceScore: number;
         phenotypeMap: {
             "0/0": string;
             "0/1": string;
@@ -63,6 +75,8 @@ export declare const TARGET_VARIANTS: {
         gene: string;
         allele: string;
         impact: string;
+        evidenceLevel: string;
+        confidenceScore: number;
         phenotypeMap: {
             "0/0": string;
             "0/1": string;
@@ -73,6 +87,44 @@ export declare const TARGET_VARIANTS: {
         gene: string;
         allele: string;
         impact: string;
+        evidenceLevel: string;
+        confidenceScore: number;
+        phenotypeMap: {
+            "0/0": string;
+            "0/1": string;
+            "1/1": string;
+        };
+    };
+    rs9923231: {
+        gene: string;
+        allele: string;
+        impact: string;
+        evidenceLevel: string;
+        confidenceScore: number;
+        phenotypeMap: {
+            "0/0": string;
+            "0/1": string;
+            "1/1": string;
+        };
+    };
+    rs116855232: {
+        gene: string;
+        allele: string;
+        impact: string;
+        evidenceLevel: string;
+        confidenceScore: number;
+        phenotypeMap: {
+            "0/0": string;
+            "0/1": string;
+            "1/1": string;
+        };
+    };
+    rs2108622: {
+        gene: string;
+        allele: string;
+        impact: string;
+        evidenceLevel: string;
+        confidenceScore: number;
         phenotypeMap: {
             "0/0": string;
             "0/1": string;
@@ -81,13 +133,15 @@ export declare const TARGET_VARIANTS: {
     };
 };
 /**
-* Parses raw VCF string content into structured genetic data
-*/
+ * Parses raw VCF string content into structured genetic data
+ */
 export declare function parseVCFContent(vcfContent: string): {
     gene: string;
     rsID: string;
     genotype: string;
     phenotype: any;
     rawGT: any;
+    confidenceScore: number;
+    evidenceLevel: string;
 }[];
 //# sourceMappingURL=vcfParser.d.ts.map

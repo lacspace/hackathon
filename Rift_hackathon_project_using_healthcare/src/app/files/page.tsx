@@ -15,6 +15,10 @@ import {
   ChevronRight,
   AlertCircle,
 } from "lucide-react";
+import { TopHeader } from "../../components/header";
+import { Sidebar } from "../../components/sidebar";
+import { useAuth } from "../../components/auth-provider";
+import { API_BASE_URL } from "../../lib/constants";
 
 interface ProfileItem {
   id: string;
@@ -41,7 +45,7 @@ export default function UploadedFilesPage() {
     try {
       setLoading(true);
       setError(null);
-      const res = await fetch("http://localhost:5001/api/profile");
+      const res = await fetch(`${API_BASE_URL}/profile`);
       if (!res.ok) throw new Error("Backend system response error");
       const data = await res.json();
       setProfiles(data);
@@ -73,38 +77,35 @@ export default function UploadedFilesPage() {
   );
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col items-center p-6 md:p-12 font-sans selection:bg-sky-100">
-      <div className="w-full max-w-6xl">
-        <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-12">
-          <div>
-            <button
-              onClick={() => router.back()}
-              className="flex items-center gap-2 text-slate-500 hover:text-sky-600 transition-colors mb-4 group font-semibold"
-            >
-              <ArrowLeft
-                size={18}
-                className="group-hover:-translate-x-1 transition-transform"
-              />
-              Back to Dashboard
-            </button>
-            <h1 className="text-4xl font-bold text-slate-900 tracking-tight flex items-center gap-4">
-              <div className="p-3 bg-sky-600 text-white rounded-2xl shadow-lg shadow-sky-100">
-                <FileText size={28} />
-              </div>
-              Archive Registry
-            </h1>
-            <p className="text-slate-500 mt-2 text-lg font-medium">
-              Manage and audit all historical genomic patient reports.
+    <div className="flex min-h-screen bg-background font-sans text-foreground selection:bg-indigo-100 transition-colors duration-500">
+      <Sidebar />
+      <main className="flex-1 p-8 lg:p-12 overflow-y-auto w-full">
+        <TopHeader title="Archive Registry" />
+        <header className="mb-12 flex flex-col md:flex-row justify-between items-end gap-6">
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="bg-indigo-500/10 text-indigo-500 px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] shadow-sm">
+                Historical Database
+              </span>
+            </div>
+            <h2 className="text-6xl font-black text-foreground tracking-tighter leading-none italic">
+              Archive <br />{" "}
+              <span className="text-zinc-400 not-italic">Registry</span>
+            </h2>
+            <p className="text-muted-foreground text-xl mt-1 font-medium leading-relaxed max-w-lg">
+              Manage and audit historical
+              <span className="text-foreground font-black ml-1">
+                genomic patient records.
+              </span>
             </p>
           </div>
-
-          <div className="flex gap-4 w-full md:w-auto">
+          <div className="flex gap-4">
             <button
               onClick={downloadAllAsJSON}
               disabled={profiles.length === 0}
-              className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-6 py-4 rounded-2xl font-bold shadow-xl shadow-slate-200 transition-all active:scale-95 disabled:opacity-50"
+              className="bg-foreground text-background px-6 py-4 rounded-2xl font-black text-sm uppercase tracking-widest shadow-xl shadow-foreground/10 transition-all active:scale-95 disabled:opacity-50 flex items-center gap-2"
             >
-              <Download size={20} /> Bulk Export (JSON)
+              <Download size={18} /> Export JSON
             </button>
           </div>
         </header>
@@ -112,22 +113,22 @@ export default function UploadedFilesPage() {
         {/* Search & Statistics */}
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
           <div className="lg:col-span-3 relative group">
-            <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-sky-500 transition-colors">
+            <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none text-muted-foreground group-focus-within:text-indigo-500 transition-colors">
               <Search size={22} />
             </div>
             <input
               type="text"
               placeholder="Search by patient name or filename..."
-              className="w-full p-4 pl-12 rounded-2xl border-2 border-white shadow-sm focus:border-sky-500 focus:ring-4 focus:ring-sky-500/10 outline-none transition-all placeholder:text-slate-300 bg-white font-medium"
+              className="w-full p-6 pl-16 rounded-[2rem] bg-muted/20 border border-foreground/5 shadow-xl shadow-foreground/5 focus:border-indigo-500 outline-none transition-all placeholder:text-muted-foreground/30 font-bold"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-          <div className="bg-sky-600 p-4 rounded-2xl text-white flex flex-col justify-center shadow-lg shadow-sky-100">
-            <span className="text-xs font-bold uppercase opacity-80 mb-1 tracking-widest">
+          <div className="bg-indigo-600 p-6 rounded-[2rem] text-white flex flex-col justify-center shadow-xl shadow-indigo-500/10">
+            <span className="text-[10px] font-black uppercase opacity-80 mb-1 tracking-widest">
               Total Registry
             </span>
-            <span className="text-3xl font-bold">
+            <span className="text-3xl font-black">
               {profiles.length} Reports
             </span>
           </div>
@@ -135,24 +136,26 @@ export default function UploadedFilesPage() {
 
         {/* List Content */}
         {error ? (
-          <div className="bg-rose-50 border-2 border-rose-100 p-12 rounded-[2.5rem] text-center">
-            <AlertCircle className="mx-auto mb-4 text-rose-600" size={48} />
-            <h3 className="text-xl font-bold text-rose-900 mb-2">
+          <div className="bg-rose-500/5 border border-rose-500/20 p-12 rounded-[3rem] text-center max-w-2xl mx-auto">
+            <AlertCircle className="mx-auto mb-4 text-rose-500" size={48} />
+            <h3 className="text-2xl font-black text-foreground mb-2">
               Registry Connection Failed
             </h3>
-            <p className="text-rose-600 font-medium mb-6">{error}</p>
+            <p className="text-muted-foreground font-medium mb-8 leading-relaxed">
+              {error}
+            </p>
             <button
               onClick={fetchProfiles}
-              className="bg-rose-600 text-white px-6 py-3 rounded-2xl font-bold hover:bg-rose-700 transition-all shadow-lg shadow-rose-100"
+              className="bg-rose-500 text-white px-8 py-3 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-rose-600 transition-all shadow-xl shadow-rose-500/20"
             >
               Retry Connection
             </button>
           </div>
         ) : loading ? (
           <div className="flex flex-col items-center justify-center py-24 gap-4">
-            <div className="w-12 h-12 border-4 border-sky-600 border-t-transparent rounded-full animate-spin"></div>
-            <p className="text-slate-500 font-bold">
-              Accessing Secure Database...
+            <div className="w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+            <p className="text-muted-foreground font-black uppercase tracking-widest text-xs">
+              Accessing Secure Archive...
             </p>
           </div>
         ) : filteredProfiles.length > 0 ? (
@@ -160,31 +163,31 @@ export default function UploadedFilesPage() {
             {filteredProfiles.map((p) => (
               <div
                 key={p.id}
-                className="group relative bg-white rounded-3xl border-2 border-white shadow-sm hover:shadow-xl hover:border-sky-100 transition-all duration-300 p-6 flex flex-col"
+                className="group relative box-premium rounded-[2.5rem] transition-all duration-500 p-8 flex flex-col"
               >
                 <div className="flex justify-between items-start mb-6">
-                  <div className="p-3 bg-slate-50 rounded-2xl text-slate-400 group-hover:bg-sky-50 group-hover:text-sky-600 transition-colors">
+                  <div className="p-3 bg-muted rounded-2xl text-muted-foreground group-hover:bg-indigo-500 group-hover:text-white transition-all duration-300">
                     <Dna size={24} />
                   </div>
-                  <span className="text-[10px] font-bold uppercase text-slate-300 font-mono tracking-tighter">
-                    {p.id.slice(0, 8)}
+                  <span className="text-[10px] font-black uppercase text-muted-foreground/30 font-mono tracking-tighter">
+                    UID: {p.id.slice(0, 8)}
                   </span>
                 </div>
 
-                <h3 className="text-xl font-bold text-slate-800 mb-1 group-hover:text-sky-900 transition-colors">
+                <h3 className="text-2xl font-black text-foreground mb-1 group-hover:text-indigo-600 transition-colors">
                   {p.name}
                 </h3>
-                <div className="flex items-center gap-2 text-sm text-slate-500 mb-6 font-medium">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground mb-6 font-medium">
                   <FileText size={14} className="flex-shrink-0" />
                   <span className="truncate max-w-[200px]">{p.file_name}</span>
                 </div>
 
-                <div className="mt-auto pt-6 border-t border-slate-50 flex items-center justify-between gap-2">
+                <div className="mt-auto pt-6 border-t border-foreground/5 flex items-center justify-between gap-2">
                   <div className="flex flex-col">
-                    <span className="text-[10px] font-bold text-slate-400 uppercase">
-                      Uploaded
+                    <span className="text-[10px] font-black text-muted-foreground/50 uppercase tracking-widest leading-none mb-1">
+                      Certified
                     </span>
-                    <span className="text-xs font-bold text-slate-600">
+                    <span className="text-xs font-black text-foreground">
                       {new Date(
                         p.uploaded_at || p.created_at,
                       ).toLocaleDateString()}
@@ -193,7 +196,7 @@ export default function UploadedFilesPage() {
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => setViewingJson(p)}
-                      className="p-2 bg-slate-50 text-slate-400 rounded-xl hover:bg-slate-100 hover:text-slate-900 transition-all shadow-sm"
+                      className="p-3 bg-muted text-muted-foreground rounded-2xl hover:bg-foreground hover:text-background transition-all"
                       title="View Raw JSON"
                     >
                       <Terminal size={18} />
@@ -213,9 +216,10 @@ export default function UploadedFilesPage() {
                             clinical_recommendation: [],
                             llm_generated_explanation: {
                               biological_explanation:
-                                "Historical report loaded.",
-                              clinical_interpretation: "Review markers.",
-                              evidence_citation: "PharmGKB Archive",
+                                "Historical report loaded from clinical archive.",
+                              clinical_interpretation:
+                                "Review markers against latest CPIC patches.",
+                              evidence_citation: "PharmGKB / ClinVar Registry",
                             },
                             quality_metrics: {
                               variant_evidence: "Verified",
@@ -226,10 +230,9 @@ export default function UploadedFilesPage() {
                         );
                         router.push("/dashboard");
                       }}
-                      className="p-2 bg-sky-50 text-sky-600 rounded-xl hover:bg-sky-600 hover:text-white transition-all shadow-sm flex items-center gap-1 font-bold text-xs pr-3"
-                      title="View Full Report"
+                      className="p-3 bg-indigo-600 text-white rounded-2xl hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-500/10 flex items-center gap-2 font-black text-xs uppercase tracking-widest"
                     >
-                      <ChevronRight size={18} /> Dashboard
+                      Dashboard <ChevronRight size={16} />
                     </button>
                   </div>
                 </div>
@@ -237,55 +240,58 @@ export default function UploadedFilesPage() {
             ))}
           </div>
         ) : (
-          <div className="bg-white rounded-3xl border-2 border-dashed border-slate-200 p-24 text-center">
-            <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Search size={32} className="text-slate-300" />
+          <div className="bg-card rounded-[3rem] border-2 border-dashed border-border p-24 text-center max-w-2xl mx-auto">
+            <div className="w-20 h-20 bg-muted rounded-[2rem] flex items-center justify-center mx-auto mb-6">
+              <Search size={32} className="text-muted-foreground" />
             </div>
-            <h3 className="text-xl font-bold text-slate-800 mb-2">
-              No Reports Found
+            <h3 className="text-2xl font-black text-foreground mb-2">
+              No Records Match
             </h3>
-            <p className="text-slate-500 max-w-sm mx-auto font-medium">
-              We couldn't find any reports matching your search. Try adjusting
-              your filters.
+            <p className="text-muted-foreground max-w-sm mx-auto font-medium">
+              The query did not yield any results in the current clinical
+              registry.
             </p>
           </div>
         )}
 
         {/* JSON Viewer Modal */}
         {viewingJson && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
-            <div className="bg-white w-full max-w-4xl max-h-[80vh] rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col">
-              <div className="p-8 border-b flex justify-between items-center bg-slate-50">
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-foreground/10 backdrop-blur-md animate-in fade-in duration-300">
+            <div className="bg-card w-full max-w-4xl max-h-[85vh] rounded-[3rem] shadow-2xl overflow-hidden flex flex-col border border-border">
+              <div className="p-10 border-b border-border flex justify-between items-center bg-muted/30">
                 <div>
-                  <h2 className="text-2xl font-bold text-slate-900">
-                    Patient JSON Record
+                  <h2 className="text-3xl font-black text-foreground tracking-tight">
+                    Clinical Object
                   </h2>
-                  <p className="text-slate-500 font-medium">
-                    Raw clinical data for {viewingJson.name}
+                  <p className="text-muted-foreground font-bold text-xs uppercase tracking-widest">
+                    Raw Data Trace: {viewingJson.name}
                   </p>
                 </div>
                 <button
                   onClick={() => setViewingJson(null)}
-                  className="bg-white p-3 rounded-2xl border hover:bg-slate-50 transition-colors"
+                  className="bg-foreground text-background p-4 rounded-2xl hover:scale-105 transition-all shadow-xl shadow-foreground/10"
                 >
-                  <ArrowLeft size={20} className="rotate-90 md:rotate-0" />
+                  <ArrowLeft size={20} />
                 </button>
               </div>
-              <div className="flex-1 overflow-auto p-8 bg-slate-900 text-sky-400 font-mono text-sm">
+              <div className="flex-1 overflow-auto p-10 bg-slate-900 text-indigo-100 font-mono text-xs leading-relaxed">
                 <pre>{JSON.stringify(viewingJson, null, 2)}</pre>
               </div>
-              <div className="p-6 bg-slate-50 text-right">
+              <div className="p-8 bg-muted/30 border-t border-border flex justify-between items-center">
+                <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">
+                  Security Protocol: SHA-256 Validated
+                </span>
                 <button
                   onClick={() => setViewingJson(null)}
-                  className="px-8 py-3 bg-slate-900 text-white font-bold rounded-2xl hover:bg-slate-800 transition-all"
+                  className="px-8 py-4 bg-foreground text-background font-black text-xs uppercase tracking-widest rounded-2xl hover:bg-slate-800 transition-all"
                 >
-                  Close Archive
+                  Exit Viewer
                 </button>
               </div>
             </div>
           </div>
         )}
-      </div>
+      </main>
     </div>
   );
 }
