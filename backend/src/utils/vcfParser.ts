@@ -164,6 +164,7 @@ export function parseVCFContent(vcfContent: string) {
     const cols = line.split("\t");
     // VCF Standard: CHROM POS ID REF ALT QUAL FILTER INFO FORMAT SAMPLE
     const rsID = cols[2];
+    if (!rsID) continue;
 
     if ((TARGET_VARIANTS as any)[rsID]) {
       let genotype = "0/0"; // Default Wild Type
@@ -171,46 +172,50 @@ export function parseVCFContent(vcfContent: string) {
         // Genotype is GT field in Sample column (index 9)
         // Format is usually GT:AD:DP:GQ... e.g. "0/1:..."
         const rawGT = cols[9].split(":")[0];
-        genotype = rawGT.replace("|", "/"); // Normalize phased genotypes
+        if (rawGT) {
+          genotype = rawGT.replace("|", "/"); // Normalize phased genotypes
+        }
       }
       foundVariants[rsID] = genotype;
     }
   }
 
-  const results = [];
+  const results: any[] = [];
   const processedGenes = new Set();
 
   // Iterate definition map to build complete report
   for (const [rsID, info] of Object.entries(TARGET_VARIANTS)) {
     const userGT = foundVariants[rsID] || "0/0";
-    const phenotype =
-      (info.phenotypeMap as any)[userGT] || "Normal Metabolizer";
+    const prototypeMap = (info as any).phenotypeMap;
+    const phenotype = prototypeMap[userGT] || "Normal Metabolizer";
 
     // Formulate display genotype (e.g., *1/*17)
     let displayGT = "*1/*1";
-    if (userGT === "0/1") displayGT = `*1/${info.allele}`;
-    if (userGT === "1/1") displayGT = `${info.allele}/${info.allele}`;
-    if (userGT === "1/2") displayGT = `${info.allele}/?`;
+    if (userGT === "0/1") displayGT = `*1/${(info as any).allele}`;
+    if (userGT === "1/1") displayGT = `${(info as any).allele}/${(info as any).allele}`;
+    if (userGT === "1/2") displayGT = `${(info as any).allele}/?`;
 
     // Logic: If we already have an entry for this gene, overwrite ONLY if new finding is more significant?
     // For simplicity in this robust backend, let's include all significant findings but deduplicate by gene for the dashboard view.
     // We will employ a "Priority" system: Poor > Int > Rapid > Normal
 
-    const existingIndex: number = results.findIndex((r) => r.gene === info.gene);
+    const existingIndex: number = results.findIndex((r) => r.gene === (info as any).gene);
 
     if (existingIndex === -1) {
       results.push({
-        gene: info.gene,
+        gene: (info as any).gene,
         rsID: rsID,
         genotype: displayGT,
         phenotype: phenotype,
         rawGT: userGT,
-        confidenceScore: info.confidenceScore,
-        evidenceLevel: info.evidenceLevel
+        confidenceScore: (info as any).confidenceScore,
+        evidenceLevel: (info as any).evidenceLevel
       });
     } else {
       // Compare significance
-      const currentPheno = results[existingIndex].phenotype;
+      const existingEntry = results[existingIndex];
+      if (!existingEntry) continue;
+      const currentPheno = existingEntry.phenotype;
       const priority: any = {
         "Poor Metabolizer": 5,
         "Poor Function": 5,
@@ -224,13 +229,13 @@ export function parseVCFContent(vcfContent: string) {
 
       if ((priority[phenotype] || 0) > (priority[currentPheno] || 0)) {
         results[existingIndex] = {
-          gene: info.gene,
+          gene: (info as any).gene,
           rsID: rsID,
           genotype: displayGT,
           phenotype: phenotype,
           rawGT: userGT,
-          confidenceScore: info.confidenceScore,
-          evidenceLevel: info.evidenceLevel
+          confidenceScore: (info as any).confidenceScore,
+          evidenceLevel: (info as any).evidenceLevel
         };
       }
     }
