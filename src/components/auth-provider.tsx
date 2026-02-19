@@ -45,7 +45,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!loading) {
       const publicPaths = ["/", "/login"];
-      const isPublicPath = publicPaths.includes(pathname);
+      const isPublicPath = pathname ? publicPaths.includes(pathname) : false;
 
       if (!user && !isPublicPath) {
         router.push("/login");
