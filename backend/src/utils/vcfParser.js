@@ -154,13 +154,17 @@ export function parseVCFContent(vcfContent) {
         const cols = line.split("\t");
         // VCF Standard: CHROM POS ID REF ALT QUAL FILTER INFO FORMAT SAMPLE
         const rsID = cols[2];
+        if (!rsID)
+            continue;
         if (TARGET_VARIANTS[rsID]) {
             let genotype = "0/0"; // Default Wild Type
             if (cols[9]) {
                 // Genotype is GT field in Sample column (index 9)
                 // Format is usually GT:AD:DP:GQ... e.g. "0/1:..."
                 const rawGT = cols[9].split(":")[0];
-                genotype = rawGT.replace("|", "/"); // Normalize phased genotypes
+                if (rawGT) {
+                    genotype = rawGT.replace("|", "/"); // Normalize phased genotypes
+                }
             }
             foundVariants[rsID] = genotype;
         }
@@ -170,7 +174,8 @@ export function parseVCFContent(vcfContent) {
     // Iterate definition map to build complete report
     for (const [rsID, info] of Object.entries(TARGET_VARIANTS)) {
         const userGT = foundVariants[rsID] || "0/0";
-        const phenotype = info.phenotypeMap[userGT] || "Normal Metabolizer";
+        const prototypeMap = info.phenotypeMap;
+        const phenotype = prototypeMap[userGT] || "Normal Metabolizer";
         // Formulate display genotype (e.g., *1/*17)
         let displayGT = "*1/*1";
         if (userGT === "0/1")
@@ -196,7 +201,10 @@ export function parseVCFContent(vcfContent) {
         }
         else {
             // Compare significance
-            const currentPheno = results[existingIndex].phenotype;
+            const existingEntry = results[existingIndex];
+            if (!existingEntry)
+                continue;
+            const currentPheno = existingEntry.phenotype;
             const priority = {
                 "Poor Metabolizer": 5,
                 "Poor Function": 5,

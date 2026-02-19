@@ -135,13 +135,5 @@ export declare const TARGET_VARIANTS: {
 /**
  * Parses raw VCF string content into structured genetic data
  */
-export declare function parseVCFContent(vcfContent: string): {
-    gene: string;
-    rsID: string;
-    genotype: string;
-    phenotype: any;
-    rawGT: any;
-    confidenceScore: number;
-    evidenceLevel: string;
-}[];
+export declare function parseVCFContent(vcfContent: string): any[];
 //# sourceMappingURL=vcfParser.d.ts.map
