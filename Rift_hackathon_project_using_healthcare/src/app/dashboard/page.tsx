@@ -209,7 +209,7 @@ export default function DashboardPage() {
                 <Timer size={14} className="text-sky-400" /> Real-time Report
               </div>
               <div className="bg-white border border-slate-200 px-3 py-1.5 rounded-xl text-[10px] font-semibold text-slate-500 uppercase tracking-widest">
-                UID: {report.patient_id.slice(0, 12)}
+                UID: {report.patient_id?.slice(0, 35) || "Unknown"}
               </div>
             </div>
             <h1 className="text-5xl font-bold text-slate-900 tracking-tighter leading-none">
@@ -218,20 +218,20 @@ export default function DashboardPage() {
             <p className="text-xl text-slate-500 font-medium">
               Precision health profile for{" "}
               <span className="text-slate-900 font-bold italic">
-                {report.name}
+                {report.name || "Patient"}
               </span>
             </p>
           </div>
 
           <div className="flex items-center gap-6">
             <div
-              className={`p-6 rounded-[2.5rem] border-4 flex flex-col items-center justify-center min-w-[160px] shadow-xl ${report.risk_assessment.overall_risk_score > 50 ? "border-rose-200 bg-white text-rose-700 shadow-rose-100/50" : "border-emerald-200 bg-white text-emerald-700 shadow-emerald-100/50"}`}
+              className={`p-6 rounded-[2.5rem] border-4 flex flex-col items-center justify-center min-w-[160px] shadow-xl ${report.risk_assessment?.overall_risk_score > 50 ? "border-rose-200 bg-white text-rose-700 shadow-rose-100/50" : "border-emerald-200 bg-white text-emerald-700 shadow-emerald-100/50"}`}
             >
               <span className="text-[10px] font-semibold uppercase tracking-widest mb-1 opacity-60">
                 Risk Index
               </span>
               <span className="text-4xl font-bold leading-none">
-                {report.risk_assessment.overall_risk_score}
+                {report.risk_assessment?.overall_risk_score || "N/A"}
               </span>
             </div>
             <button
@@ -249,13 +249,19 @@ export default function DashboardPage() {
           <Panel
             icon={<BrainCircuit className="text-sky-600" />}
             title="Biological Perspective"
-            content={report.llm_generated_explanation.biological_explanation}
+            content={
+              report.llm_generated_explanation?.biological_explanation ||
+              "No explanation provided."
+            }
             theme="sky"
           />
           <Panel
             icon={<Stethoscope className="text-amber-600" />}
             title="Clinical Opinion"
-            content={report.llm_generated_explanation.clinical_interpretation}
+            content={
+              report.llm_generated_explanation?.clinical_interpretation ||
+              "No interpretation provided."
+            }
             theme="amber"
           />
           <Panel
@@ -265,15 +271,15 @@ export default function DashboardPage() {
             metrics={[
               {
                 label: "Variant Evidence",
-                value: report.quality_metrics.variant_evidence,
+                value: report.quality_metrics?.variant_evidence || "N/A",
               },
               {
                 label: "Annotation Level",
-                value: report.quality_metrics.annotation_quality,
+                value: report.quality_metrics?.annotation_quality || "N/A",
               },
               {
                 label: "ClinPGx Certainty",
-                value: report.quality_metrics.database_certainty,
+                value: report.quality_metrics?.database_certainty || "N/A",
               },
             ]}
             theme="emerald"
@@ -367,49 +373,51 @@ export default function DashboardPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-50">
-                {report.clinical_recommendation.map((rec: any, idx: number) => (
-                  <tr
-                    key={idx}
-                    className="group hover:bg-slate-50/50 transition-colors"
-                  >
-                    <td className="px-6 py-8">
-                      <div className="flex flex-col">
-                        <span className="text-xl font-bold text-slate-800">
-                          {rec.drug}
+                {(report.clinical_recommendation || []).map(
+                  (rec: any, idx: number) => (
+                    <tr
+                      key={idx}
+                      className="group hover:bg-slate-50/50 transition-colors"
+                    >
+                      <td className="px-6 py-8">
+                        <div className="flex flex-col">
+                          <span className="text-xl font-bold text-slate-800">
+                            {rec.drug}
+                          </span>
+                          <span className="text-[10px] font-semibold text-sky-600 uppercase tracking-widest">
+                            Level 1A Evidence
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-8">
+                        <span
+                          className={`px-4 py-2 rounded-2xl text-xs font-semibold uppercase tracking-widest shadow-sm ${(rec.action || "").includes("Avoid") ? "bg-rose-600 text-white shadow-rose-200" : "bg-emerald-600 text-white shadow-emerald-200"}`}
+                        >
+                          {rec.action || "In Review"}
                         </span>
-                        <span className="text-[10px] font-semibold text-sky-600 uppercase tracking-widest">
-                          Level 1A Evidence
-                        </span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-8">
-                      <span
-                        className={`px-4 py-2 rounded-2xl text-xs font-semibold uppercase tracking-widest shadow-sm ${rec.action.includes("Avoid") ? "bg-rose-600 text-white shadow-rose-200" : "bg-emerald-600 text-white shadow-emerald-200"}`}
-                      >
-                        {rec.action || "In Review"}
-                      </span>
-                    </td>
-                    <td className="px-6 py-8 text-slate-500 font-medium leading-relaxed max-w-lg italic">
-                      {rec.reason}
-                    </td>
-                    <td className="px-6 py-8 font-bold text-slate-800">
-                      {rec.alternative ? (
-                        <span className="flex items-center gap-2 text-sky-700">
-                          <CheckCircle2 size={16} /> {rec.alternative}
-                        </span>
-                      ) : (
-                        "---"
-                      )}
-                    </td>
-                  </tr>
-                ))}
+                      </td>
+                      <td className="px-6 py-8 text-slate-500 font-medium leading-relaxed max-w-lg italic">
+                        {rec.reason}
+                      </td>
+                      <td className="px-6 py-8 font-bold text-slate-800">
+                        {rec.alternative ? (
+                          <span className="flex items-center gap-2 text-sky-700">
+                            <CheckCircle2 size={16} /> {rec.alternative}
+                          </span>
+                        ) : (
+                          "---"
+                        )}
+                      </td>
+                    </tr>
+                  ),
+                )}
               </tbody>
             </table>
           </div>
           <div className="p-6 bg-slate-50 text-center">
             <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-[0.3em]">
               Verified Source:{" "}
-              {report.llm_generated_explanation.evidence_citation}
+              {report.llm_generated_explanation?.evidence_citation || "Unknown"}
             </span>
           </div>
         </section>

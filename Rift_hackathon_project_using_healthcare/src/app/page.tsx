@@ -34,18 +34,14 @@ export default function LandingPage() {
         }
 
         const data = await response.json();
-        const geneticData = data.genes;
 
         // Store in localStorage for the Dashboard to use
         localStorage.setItem(
           "geneticProfile",
           JSON.stringify({
+            ...data,
             name: "Patient (Real Data)",
             timestamp: new Date().toISOString(),
-            profileId: data.profileId,
-            fileName: data.fileName,
-            filePath: data.filePath,
-            genes: geneticData,
           }),
         );
 
