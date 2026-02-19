@@ -1,0 +1,86 @@
+import express, { Application, Request, Response, NextFunction } from 'express';
+import dotenv from 'dotenv';
+import cors from 'cors';
+import helmet from 'helmet';
+import morgan from 'morgan';
+import connectDB from './config/db';
+import swaggerUi from 'swagger-ui-express';
+import swaggerJsDoc from 'swagger-jsdoc';
+
+// Import Routes
+import uploadRoutes from './routes/uploadRoutes';
+import profileRoutes from './routes/profileRoutes';
+
+// Load Env
+dotenv.config();
+
+// Connect DB
+connectDB();
+
+const app: Application = express();
+
+// Middleware
+app.use(express.json());
+app.use(cors({
+    origin: ["http://localhost:3000", "http://127.0.0.1:3000"],
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+}));
+app.use(helmet({
+    crossOriginResourcePolicy: false, 
+}));
+app.use(morgan('dev'));
+
+// Swagger Config
+const swaggerOptions = {
+    definition: {
+        openapi: '3.0.0',
+        info: {
+            title: 'PharmaGuard API',
+            version: '1.0.0',
+            description: 'API Documentation for PharmaGuard Genomic Analysis Platform',
+            contact: {
+                name: "PharmaGuard Support",
+                email: "support@pharmaguard.med"
+            }
+        },
+        servers: [
+            {
+                url: `http://localhost:${process.env.PORT || 5000}`,
+                description: 'Local Development Server'
+            }
+        ]
+    },
+    apis: ["./src/routes/*.ts"],
+};
+
+const specs = swaggerJsDoc(swaggerOptions);
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
+
+// Routes
+app.use('/api/upload', uploadRoutes);
+app.use('/api/profile', profileRoutes);
+
+// Health Check
+app.get('/', (req: Request, res: Response) => {
+    res.status(200).json({ 
+        message: 'PharmaGuard API is Online 🧬', 
+        docs: `http://localhost:${process.env.PORT || 5000}/api-docs` 
+    });
+});
+
+// Error Handling Middleware
+app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
+    console.error(`❌ Server Error: ${err.message}`);
+    res.status(500).json({ 
+        message: 'Internal Server Error', 
+        error: process.env.NODE_ENV === 'development' ? err.message : undefined 
+    });
+});
+
+const PORT = process.env.PORT || 5000;
+
+app.listen(PORT, () => {
+    console.log(`\n🚀 Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
+    console.log(`📄 Documentation available at http://localhost:${PORT}/api-docs\n`);
+});

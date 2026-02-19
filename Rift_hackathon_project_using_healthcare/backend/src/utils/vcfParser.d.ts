@@ -1,0 +1,93 @@
+export declare const TARGET_VARIANTS: {
+    rs3892097: {
+        gene: string;
+        allele: string;
+        impact: string;
+        phenotypeMap: {
+            "0/0": string;
+            "0/1": string;
+            "1/1": string;
+        };
+    };
+    rs1065852: {
+        gene: string;
+        allele: string;
+        impact: string;
+        phenotypeMap: {
+            "0/0": string;
+            "0/1": string;
+            "1/1": string;
+        };
+    };
+    rs12248560: {
+        gene: string;
+        allele: string;
+        impact: string;
+        phenotypeMap: {
+            "0/0": string;
+            "0/1": string;
+            "1/1": string;
+        };
+    };
+    rs4244285: {
+        gene: string;
+        allele: string;
+        impact: string;
+        phenotypeMap: {
+            "0/0": string;
+            "0/1": string;
+            "1/1": string;
+        };
+    };
+    rs1799853: {
+        gene: string;
+        allele: string;
+        impact: string;
+        phenotypeMap: {
+            "0/0": string;
+            "0/1": string;
+            "1/1": string;
+        };
+    };
+    rs4149056: {
+        gene: string;
+        allele: string;
+        impact: string;
+        phenotypeMap: {
+            "0/0": string;
+            "0/1": string;
+            "1/1": string;
+        };
+    };
+    rs3918290: {
+        gene: string;
+        allele: string;
+        impact: string;
+        phenotypeMap: {
+            "0/0": string;
+            "0/1": string;
+            "1/1": string;
+        };
+    };
+    rs1142345: {
+        gene: string;
+        allele: string;
+        impact: string;
+        phenotypeMap: {
+            "0/0": string;
+            "0/1": string;
+            "1/1": string;
+        };
+    };
+};
+/**
+* Parses raw VCF string content into structured genetic data
+*/
+export declare function parseVCFContent(vcfContent: string): {
+    gene: string;
+    rsID: string;
+    genotype: string;
+    phenotype: any;
+    rawGT: any;
+}[];
+//# sourceMappingURL=vcfParser.d.ts.map

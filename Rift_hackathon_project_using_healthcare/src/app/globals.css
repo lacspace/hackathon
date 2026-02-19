@@ -1,0 +1,74 @@
+@import "tailwindcss";
+
+:root {
+  /* Medical/Clinical Color Palette - Clean & Trustworthy */
+  --primary: #0ea5e9; /* Sky 500 */
+  --primary-dark: #0284c7; /* Sky 600 */
+  --secondary: #64748b; /* Slate 500 */
+  
+  --background: #f8fafc; /* Slate 50 */
+  --surface: #ffffff;
+  
+  --text-main: #0f172a; /* Slate 900 */
+  --text-muted: #64748b; /* Slate 500 */
+  
+  --success-bg: #f0fdf4; /* Green 50 */
+  --success-text: #15803d; /* Green 700 */
+  
+  --warning-bg: #fffbeb; /* Amber 50 */
+  --warning-text: #b45309; /* Amber 700 */
+  
+  --danger-bg: #fef2f2; /* Red 50 */
+  --danger-text: #b91c1c; /* Red 700 */
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-primary: var(--primary);
+  --color-primary-dark: var(--primary-dark);
+  
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background-color: var(--background);
+  color: var(--text-main);
+  font-family: var(--font-sans), Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Clear UI Utilities */
+.card-shadow {
+  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+}
+
+.card-hover {
+  transition: all 0.2s ease-in-out;
+}
+.card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+}
+
+.sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  transition: all 0.2s;
+  color: var(--text-muted);
+}
+
+.sidebar-link:hover {
+  background-color: rgba(14, 165, 233, 0.1); /* Primary with opacity */
+  color: var(--primary-dark);
+}
+
+.sidebar-link.active {
+  background-color: rgba(14, 165, 233, 0.1);
+  color: var(--primary-dark);
+}
