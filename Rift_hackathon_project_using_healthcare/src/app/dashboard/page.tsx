@@ -18,6 +18,7 @@ import {
   Timer,
   Microscope,
   Stethoscope,
+  FlaskConical,
 } from "lucide-react";
 
 interface GeneDisplay {
@@ -34,6 +35,7 @@ export default function DashboardPage() {
   const router = useRouter();
   const [report, setReport] = useState<any>(null);
   const [uiGenes, setUiGenes] = useState<GeneDisplay[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const data = localStorage.getItem("geneticProfile");
@@ -49,7 +51,7 @@ export default function DashboardPage() {
           let color =
             "text-emerald-700 bg-emerald-50 border-emerald-200 shadow-emerald-100/50";
 
-          const phenotype = g.phenotype.toLowerCase();
+          const phenotype = (g.phenotype || "").toLowerCase();
           if (
             phenotype.includes("poor") ||
             phenotype.includes("rapid") ||
@@ -85,17 +87,41 @@ export default function DashboardPage() {
         console.error("Error loading report", e);
       }
     }
+    setIsLoading(false);
   }, []);
 
-  if (!report) {
+  if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 text-slate-900 selection:bg-sky-100">
         <div className="flex flex-col items-center gap-6">
           <div className="w-16 h-16 border-8 border-sky-100 border-t-sky-600 rounded-full animate-spin"></div>
-          <p className="text-slate-500 font-black uppercase tracking-widest text-sm">
+          <p className="text-slate-500 font-semibold uppercase tracking-widest text-sm">
             Decoding Patient Genome...
           </p>
         </div>
+      </div>
+    );
+  }
+
+  if (!report) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 p-6 text-center">
+        <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center mb-8 shadow-xl">
+          <Dna className="w-12 h-12 text-slate-300" />
+        </div>
+        <h1 className="text-3xl font-bold text-slate-800 mb-4 tracking-tighter">
+          No Active Patient Profile
+        </h1>
+        <p className="text-slate-500 max-w-md mx-auto mb-10 font-medium leading-relaxed">
+          Please upload a genomic sequence file (VCF) to generate a precision
+          medicine report.
+        </p>
+        <button
+          onClick={() => router.push("/")}
+          className="bg-sky-600 hover:bg-sky-700 text-white px-10 py-4 rounded-2xl font-bold shadow-xl shadow-sky-100 transition-all active:scale-95"
+        >
+          Begin New Analysis
+        </button>
       </div>
     );
   }
@@ -114,13 +140,13 @@ export default function DashboardPage() {
             <div className="p-2.5 bg-sky-600 rounded-xl shadow-lg shadow-sky-100 text-white">
               <Dna className="w-6 h-6" />
             </div>
-            <span className="text-2xl font-black tracking-tighter">
+            <span className="text-2xl font-bold tracking-tighter">
               PharmaGuard
             </span>
           </div>
 
           <nav className="space-y-2">
-            <p className="px-4 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4">
+            <p className="px-4 text-[10px] font-semibold text-slate-400 uppercase tracking-[0.2em] mb-4">
               Registry Control
             </p>
             <NavItem
@@ -138,10 +164,15 @@ export default function DashboardPage() {
               label="Archive Registry"
               onClick={() => router.push("/files")}
             />
+            <NavItem
+              icon={<FlaskConical size={20} />}
+              label="Validation Suite"
+              onClick={() => router.push("/test-cases")}
+            />
             <div className="pt-8 mt-8 border-t border-slate-100">
               <button
                 onClick={handleNewUpload}
-                className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-rose-600 hover:bg-rose-50 font-bold transition-all"
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-rose-600 hover:bg-rose-50 font-semibold transition-all"
               >
                 <Trash2 size={20} />
                 Reset Session
@@ -152,7 +183,7 @@ export default function DashboardPage() {
 
         <div className="p-8 border-t border-slate-100">
           <div className="bg-slate-50 p-5 rounded-[2rem] border border-slate-100">
-            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">
+            <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest block mb-2">
               Protocol Status
             </span>
             <div className="flex items-center gap-3">
@@ -160,7 +191,7 @@ export default function DashboardPage() {
                 <span className="w-2 h-2 bg-emerald-500 rounded-full"></span>
                 <span className="w-2 h-2 bg-emerald-500/30 rounded-full"></span>
               </div>
-              <span className="text-sm font-black text-slate-700 uppercase tracking-tighter italic">
+              <span className="text-sm font-semibold text-slate-700 uppercase tracking-tighter italic">
                 Live / Decrypted
               </span>
             </div>
@@ -174,19 +205,19 @@ export default function DashboardPage() {
         <header className="flex flex-col xl:flex-row xl:items-end justify-between gap-8 mb-16">
           <div className="space-y-4">
             <div className="flex flex-wrap items-center gap-3">
-              <div className="flex items-center gap-2 bg-slate-900 text-white px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-slate-200">
+              <div className="flex items-center gap-2 bg-slate-900 text-white px-3 py-1.5 rounded-xl text-[10px] font-semibold uppercase tracking-widest shadow-lg shadow-slate-200">
                 <Timer size={14} className="text-sky-400" /> Real-time Report
               </div>
-              <div className="bg-white border border-slate-200 px-3 py-1.5 rounded-xl text-[10px] font-black text-slate-500 uppercase tracking-widest">
+              <div className="bg-white border border-slate-200 px-3 py-1.5 rounded-xl text-[10px] font-semibold text-slate-500 uppercase tracking-widest">
                 UID: {report.patient_id.slice(0, 12)}
               </div>
             </div>
-            <h1 className="text-5xl font-black text-slate-900 tracking-tighter leading-none">
+            <h1 className="text-5xl font-bold text-slate-900 tracking-tighter leading-none">
               Patient Clinical Summary
             </h1>
             <p className="text-xl text-slate-500 font-medium">
               Precision health profile for{" "}
-              <span className="text-slate-900 font-black italic">
+              <span className="text-slate-900 font-bold italic">
                 {report.name}
               </span>
             </p>
@@ -196,16 +227,16 @@ export default function DashboardPage() {
             <div
               className={`p-6 rounded-[2.5rem] border-4 flex flex-col items-center justify-center min-w-[160px] shadow-xl ${report.risk_assessment.overall_risk_score > 50 ? "border-rose-200 bg-white text-rose-700 shadow-rose-100/50" : "border-emerald-200 bg-white text-emerald-700 shadow-emerald-100/50"}`}
             >
-              <span className="text-[10px] font-black uppercase tracking-widest mb-1 opacity-60">
+              <span className="text-[10px] font-semibold uppercase tracking-widest mb-1 opacity-60">
                 Risk Index
               </span>
-              <span className="text-4xl font-black leading-none">
+              <span className="text-4xl font-bold leading-none">
                 {report.risk_assessment.overall_risk_score}
               </span>
             </div>
             <button
               onClick={() => router.push("/analysis")}
-              className="group relative flex items-center justify-center gap-3 bg-slate-900 hover:bg-sky-600 text-white h-24 px-10 rounded-[2.5rem] font-black text-lg transition-all shadow-2xl shadow-slate-200 hover:translate-y-[-4px]"
+              className="group relative flex items-center justify-center gap-3 bg-slate-900 hover:bg-sky-600 text-white h-24 px-10 rounded-[2.5rem] font-bold text-lg transition-all shadow-2xl shadow-slate-200 hover:translate-y-[-4px]"
             >
               Start Analysis{" "}
               <ArrowRight className="w-6 h-6 group-hover:translate-x-2 transition-transform" />
@@ -256,11 +287,11 @@ export default function DashboardPage() {
               <div className="p-2 bg-sky-100 rounded-lg text-sky-700">
                 <Microscope size={20} />
               </div>
-              <h2 className="text-2xl font-black text-slate-800 tracking-tight text-teal-800">
+              <h2 className="text-2xl font-bold text-slate-800 tracking-tight text-teal-800">
                 Marker Identification
               </h2>
             </div>
-            <div className="px-5 py-2 bg-white rounded-full border border-slate-200 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] shadow-sm">
+            <div className="px-5 py-2 bg-white rounded-full border border-slate-200 text-[10px] font-semibold text-slate-400 uppercase tracking-[0.2em] shadow-sm">
               {uiGenes.length} Markers Logged
             </div>
           </div>
@@ -272,7 +303,7 @@ export default function DashboardPage() {
                 className={`group relative overflow-hidden bg-white p-8 rounded-[2.5rem] border-2 transition-all duration-500 hover:shadow-2xl hover:translate-y-[-8px] ${gene.color.split(" ")[2]}`}
               >
                 <div className="flex justify-between items-start mb-6">
-                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-300 font-mono">
+                  <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-300 font-mono">
                     {gene.rsID}
                   </span>
                   <div
@@ -282,24 +313,24 @@ export default function DashboardPage() {
                   </div>
                 </div>
 
-                <h3 className="text-3xl font-black text-slate-900 mb-1 tracking-tighter">
+                <h3 className="text-3xl font-bold text-slate-900 mb-1 tracking-tighter">
                   {gene.name}
                 </h3>
-                <p className="text-sm font-bold text-slate-500/80 mb-6 italic leading-relaxed">
+                <p className="text-sm font-medium text-slate-500/80 mb-6 italic leading-relaxed">
                   {gene.status}
                 </p>
 
                 <div className="mt-auto pt-6 border-t border-slate-100/50 flex items-center justify-between">
                   <div
-                    className={`inline-flex items-center px-3 py-1.5 rounded-xl text-[11px] font-black uppercase tracking-widest border ${gene.color}`}
+                    className={`inline-flex items-center px-3 py-1.5 rounded-xl text-[11px] font-semibold uppercase tracking-widest border ${gene.color}`}
                   >
                     {gene.risk}
                   </div>
                   <div className="text-right">
-                    <p className="text-[10px] font-black text-slate-300 uppercase leading-none mb-1">
+                    <p className="text-[10px] font-semibold text-slate-300 uppercase leading-none mb-1">
                       Conf.
                     </p>
-                    <p className="text-sm font-black text-slate-700">
+                    <p className="text-sm font-semibold text-slate-700">
                       {(gene.confidence * 100).toFixed(0)}%
                     </p>
                   </div>
@@ -316,7 +347,7 @@ export default function DashboardPage() {
               <AlertTriangle size={24} />
             </div>
             <div>
-              <h3 className="text-2xl font-black text-slate-900 tracking-tight">
+              <h3 className="text-2xl font-bold text-slate-900 tracking-tight">
                 Immediate Clinical Directives
               </h3>
               <p className="text-slate-400 font-medium text-sm">
@@ -328,7 +359,7 @@ export default function DashboardPage() {
           <div className="overflow-x-auto p-4">
             <table className="w-full text-left">
               <thead>
-                <tr className="text-[10px] uppercase font-black tracking-[0.2em] text-slate-400">
+                <tr className="text-[10px] uppercase font-semibold tracking-[0.2em] text-slate-400">
                   <th className="px-6 py-6">Molecules</th>
                   <th className="px-6 py-6">Directive</th>
                   <th className="px-6 py-6">Scientific Rationale</th>
@@ -343,17 +374,17 @@ export default function DashboardPage() {
                   >
                     <td className="px-6 py-8">
                       <div className="flex flex-col">
-                        <span className="text-xl font-black text-slate-800">
+                        <span className="text-xl font-bold text-slate-800">
                           {rec.drug}
                         </span>
-                        <span className="text-[10px] font-bold text-sky-600 uppercase tracking-widest">
+                        <span className="text-[10px] font-semibold text-sky-600 uppercase tracking-widest">
                           Level 1A Evidence
                         </span>
                       </div>
                     </td>
                     <td className="px-6 py-8">
                       <span
-                        className={`px-4 py-2 rounded-2xl text-xs font-black uppercase tracking-widest shadow-sm ${rec.action.includes("Avoid") ? "bg-rose-600 text-white shadow-rose-200" : "bg-emerald-600 text-white shadow-emerald-200"}`}
+                        className={`px-4 py-2 rounded-2xl text-xs font-semibold uppercase tracking-widest shadow-sm ${rec.action.includes("Avoid") ? "bg-rose-600 text-white shadow-rose-200" : "bg-emerald-600 text-white shadow-emerald-200"}`}
                       >
                         {rec.action || "In Review"}
                       </span>
@@ -361,7 +392,7 @@ export default function DashboardPage() {
                     <td className="px-6 py-8 text-slate-500 font-medium leading-relaxed max-w-lg italic">
                       {rec.reason}
                     </td>
-                    <td className="px-6 py-8 font-black text-slate-800">
+                    <td className="px-6 py-8 font-bold text-slate-800">
                       {rec.alternative ? (
                         <span className="flex items-center gap-2 text-sky-700">
                           <CheckCircle2 size={16} /> {rec.alternative}
@@ -376,7 +407,7 @@ export default function DashboardPage() {
             </table>
           </div>
           <div className="p-6 bg-slate-50 text-center">
-            <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">
+            <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-[0.3em]">
               Verified Source:{" "}
               {report.llm_generated_explanation.evidence_citation}
             </span>
@@ -401,7 +432,7 @@ function NavItem({
   return (
     <button
       onClick={onClick}
-      className={`w-full flex items-center gap-4 px-4 py-4 rounded-[1.5rem] font-black text-sm transition-all duration-300 ${active ? "bg-slate-900 text-white shadow-xl shadow-slate-200 scale-[1.02]" : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"}`}
+      className={`w-full flex items-center gap-4 px-4 py-4 rounded-[1.5rem] font-semibold text-sm transition-all duration-300 ${active ? "bg-slate-900 text-white shadow-xl shadow-slate-200 scale-[1.02]" : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"}`}
     >
       {icon}
       {label}
@@ -435,9 +466,7 @@ function Panel({
     <div className={`p-8 rounded-[2.5rem] border-2 shadow-xl ${themes[theme]}`}>
       <div className="flex items-center gap-3 mb-6">
         <div className="p-2.5 bg-white rounded-2xl shadow-sm">{icon}</div>
-        <h4 className="text-sm font-black uppercase tracking-widest">
-          {title}
-        </h4>
+        <h4 className="text-sm font-bold uppercase tracking-widest">{title}</h4>
       </div>
       {isMetrics ? (
         <div className="space-y-4">
@@ -446,17 +475,17 @@ function Panel({
               key={i}
               className="flex justify-between items-center bg-white/50 p-3 rounded-2xl border border-white/50"
             >
-              <span className="text-xs font-bold text-slate-500">
+              <span className="text-xs font-semibold text-slate-500">
                 {m.label}
               </span>
-              <span className="text-sm font-black text-slate-800">
+              <span className="text-sm font-bold text-slate-800">
                 {m.value}
               </span>
             </div>
           ))}
         </div>
       ) : (
-        <p className="text-sm font-bold italic leading-relaxed opacity-80">
+        <p className="text-sm font-semibold italic leading-relaxed opacity-80">
           "{content}"
         </p>
       )}

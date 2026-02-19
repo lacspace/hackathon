@@ -18,6 +18,7 @@
 
 import supabase from '../config/db.js';
 import type { IProfile, IGeneResult } from '../types/index.js';
+import crypto from 'crypto';
 
 export interface IProfileRow {
     id: string;

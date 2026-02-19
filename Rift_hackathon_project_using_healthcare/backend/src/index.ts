@@ -1,4 +1,5 @@
 import express, { type Application, type Request, type Response, type NextFunction } from 'express';
+setInterval(() => {}, 1000); // Keep-alive
 import dotenv from 'dotenv';
 import cors from 'cors';
 import helmet from 'helmet';

@@ -1,6 +1,7 @@
 import type { IGeneResult } from '../types/index.js';
 import fs from 'fs';
 import path from 'path';
+import https from 'https';
 
 // Use the absolute path for the generated advanced database
 const ADVANCED_DB_PATH = '/Users/apple/Downloads/hackathon/Rift_hackathon_project_using_healthcare/backend/src/data/advanced_drug_db.json';
@@ -42,9 +43,10 @@ export interface PatientReport {
 }
 
 /**
- * Advanced AI Module that uses real ClinPGx/PharmGKB data
+ * Advanced AI Module with Gemini LLM integration
  */
-export function generatePatientReport(profileId: string, genes: any[]): PatientReport {
+export async function generatePatientReport(profileId: string, genes: any[]): Promise<PatientReport> {
+    console.log('📝 Generating report for:', profileId);
     const highRiskGenes = genes.filter(g => 
         g.phenotype.toLowerCase().includes('poor') || 
         g.phenotype.toLowerCase().includes('rapid') || 
@@ -59,11 +61,9 @@ export function generatePatientReport(profileId: string, genes: any[]): PatientR
     
     // Dynamic Recommendation Engine using Advanced DB
     highRiskGenes.forEach(g => {
-        // Find all drugs associated with this gene in our advanced KB
         Object.keys(advancedDb).forEach(drugName => {
             const entry = advancedDb[drugName];
             if (entry.genes.includes(g.gene)) {
-                // If there's high-risk clinical evidence for this drug-variant pair
                 const evidence = entry.clinicalVariants.find((v: any) => v.gene === g.gene);
                 
                 recommendations.push({
@@ -81,7 +81,6 @@ export function generatePatientReport(profileId: string, genes: any[]): PatientR
         });
     });
 
-    // Deduplicate and limit recommendations for the report summary
     const uniqueRecs = recommendations.filter((v, i, a) => a.findIndex(t => t.drug === v.drug) === i).slice(0, 5);
 
     if (uniqueRecs.length === 0) {
@@ -92,14 +91,37 @@ export function generatePatientReport(profileId: string, genes: any[]): PatientR
         });
     }
 
-    // AI Explanation Generation
-    const bioExplanation = `Found significant metabolic variations in the ${highRiskGenes.map(g => g.gene).join(', ')} pathway(s). ` +
-        `Specifically, the ${highRiskGenes[0]?.gene || 'primary'} gene is behaving as a ${highRiskGenes[0]?.phenotype || 'standard metabolizer'}, ` +
-        `which directly impacts the clearance rate of ${uniqueRecs.length} classes of medications.`;
+    // Default Fallback Explanations
+    let bioExplanation = `Found significant metabolic variations in the ${highRiskGenes.map(g => g.gene).join(', ')} pathway(s). ` +
+        `Specifically, the ${highRiskGenes[0]?.gene || 'primary'} gene is behaving as a ${highRiskGenes[0]?.phenotype || 'standard metabolizer'}.`;
 
-    const clinicalInterpretation = `Based on processed PharmGKB and CPIC datasets, this patient carries variants with high clinical evidence ` +
-        `levels (${uniqueRecs[0]?.evidence_level || '1A'}). Clinical actions are warranted for prodrugs like Clopidogrel or substances like Codeine ` +
-        `if relevant to the current treatment plan.`;
+    let clinicalInterpretation = `Based on processed PharmGKB and CPIC datasets, clinical actions are warranted for specific prodrugs or substances if relevant.`;
+
+    // 🤖 Gemini Integration
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (apiKey && highRiskGenes.length > 0) {
+        try {
+            const prompt = `
+                You are a Clinical Pharmacogenomics Expert. 
+                Patient Genetic Findings: ${JSON.stringify(highRiskGenes.map(g => ({ gene: g.gene, phenotype: g.phenotype })))}
+                Clinical Recommendations: ${JSON.stringify(uniqueRecs.map(r => ({ drug: r.drug, action: r.action })))}
+                
+                Provide a professional summary for a medical report:
+                1. A brief "biological_explanation" (2-3 sentences) on how these variants impact enzyme activity.
+                2. A "clinical_interpretation" (2-3 sentences) on the medical implications and next steps for the physician.
+                
+                RESPONSE MUST BE ONLY JSON: {"biological_explanation": "...", "clinical_interpretation": "..."}
+            `;
+            
+            const geminiData = await callGeminiAPI(apiKey, prompt);
+            if (geminiData && geminiData.biological_explanation) {
+                bioExplanation = geminiData.biological_explanation;
+                clinicalInterpretation = geminiData.clinical_interpretation;
+            }
+        } catch (error) {
+            console.warn('Gemini LLM failed, using template-based fallback.', error);
+        }
+    }
 
     return {
         patient_id: profileId,
@@ -129,4 +151,47 @@ export function generatePatientReport(profileId: string, genes: any[]): PatientR
             database_certainty: "99.4%"
         }
     };
+}
+
+/**
+ * Custom fetch implementation over HTTPS to avoid dependency issues
+ */
+function callGeminiAPI(apiKey: string, prompt: string): Promise<any> {
+    return new Promise((resolve, reject) => {
+        const url = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+        const payload = JSON.stringify({
+            contents: [{ parts: [{ text: prompt }] }]
+        });
+
+        const req = https.request(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Content-Length': Buffer.byteLength(payload)
+            },
+            timeout: 8000
+        }, (res) => {
+            let data = '';
+            res.on('data', chunk => data += chunk);
+            res.on('end', () => {
+                try {
+                    const json = JSON.parse(data);
+                    const text = json.candidates?.[0]?.content?.parts?.[0]?.text || '';
+                    const jsonMatch = text.match(/\{[\s\S]*\}/);
+                    if (jsonMatch) {
+                        resolve(JSON.parse(jsonMatch[0]));
+                    } else {
+                        resolve(null);
+                    }
+                } catch (e) {
+                    reject(e);
+                }
+            });
+        });
+
+        req.on('error', reject);
+        req.on('timeout', () => { req.destroy(); reject(new Error('Gemini Timeout')); });
+        req.write(payload);
+        req.end();
+    });
 }

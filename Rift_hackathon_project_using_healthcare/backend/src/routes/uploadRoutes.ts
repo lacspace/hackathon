@@ -77,10 +77,9 @@ router.post('/', upload.single('vcf'), async (req: Request, res: Response) => {
         });
 
         // Generate the required structured report as per Hackathon Case Study
-        const report = generatePatientReport(newProfile.id, (newProfile as any).genes);
+        const report = await generatePatientReport(newProfile.id, (newProfile as any).genes);
 
         res.status(201).json({
-            message: 'File uploaded and genomic analysis complete',
             ...report
         });
     } catch (error: any) {

@@ -17,6 +17,7 @@ import {
   ShieldCheck,
   BrainCircuit,
   Terminal,
+  FlaskConical,
 } from "lucide-react";
 import { analyzeUniversalRisk } from "../../lib/risk-engine";
 
@@ -129,7 +130,7 @@ export default function AnalysisPage() {
       {/* Sidebar */}
       <aside className="w-64 bg-white border-r border-slate-200 flex-shrink-0 flex flex-col justify-between hidden md:flex sticky top-0 h-screen">
         <div className="p-6">
-          <div className="flex items-center gap-3 mb-10 text-sky-600 font-bold text-xl tracking-tight">
+          <div className="flex items-center gap-3 mb-10 text-sky-600 font-semibold text-xl tracking-tight">
             <div className="p-2 bg-sky-50 rounded-lg">
               <Dna className="w-6 h-6" />
             </div>
@@ -155,6 +156,13 @@ export default function AnalysisPage() {
               <FileText className="w-5 h-5" />
               Archive Registry
             </button>
+            <button
+              onClick={() => router.push("/test-cases")}
+              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 hover:bg-slate-50 hover:text-slate-900 font-medium transition-colors"
+            >
+              <FlaskConical className="w-5 h-5" />
+              Validation Suite
+            </button>
           </nav>
         </div>
       </aside>
@@ -164,11 +172,11 @@ export default function AnalysisPage() {
         <header className="mb-12 flex flex-col md:flex-row justify-between items-end gap-6">
           <div>
             <div className="flex items-center gap-2 mb-3">
-              <span className="bg-sky-100 text-sky-700 px-2 py-1 rounded text-[10px] font-black uppercase tracking-widest">
+              <span className="bg-sky-100 text-sky-700 px-2 py-1 rounded text-[10px] font-semibold uppercase tracking-widest">
                 Clinical Research Tool
               </span>
             </div>
-            <h2 className="text-4xl font-black text-slate-900 tracking-tight">
+            <h2 className="text-4xl font-bold text-slate-900 tracking-tight">
               Evidence Console
             </h2>
             <p className="text-slate-500 text-lg mt-1 font-medium italic">
@@ -178,7 +186,7 @@ export default function AnalysisPage() {
           </div>
           <button
             onClick={handleNewUpload}
-            className="flex items-center gap-2 px-6 py-3.5 rounded-2xl bg-white border-2 border-slate-100 text-slate-600 font-bold hover:border-sky-200 hover:bg-sky-50 transition-all shadow-sm"
+            className="flex items-center gap-2 px-6 py-3.5 rounded-2xl bg-white border-2 border-slate-100 text-slate-600 font-semibold hover:border-sky-200 hover:bg-sky-50 transition-all shadow-sm"
           >
             <Dna size={18} className="text-sky-500" /> New Patient
           </button>
@@ -192,14 +200,14 @@ export default function AnalysisPage() {
           <input
             type="text"
             placeholder="Search medication (e.g., Codeine, Warfarin, Abacavir)..."
-            className="w-full p-8 pl-16 rounded-[2.5rem] bg-white border-2 border-slate-50 shadow-2xl shadow-slate-200/50 focus:border-sky-500 focus:ring-8 focus:ring-sky-500/5 outline-none transition-all text-2xl font-bold placeholder:text-slate-200"
+            className="w-full p-8 pl-16 rounded-[2.5rem] bg-white border-2 border-slate-50 shadow-2xl shadow-slate-200/50 focus:border-sky-500 focus:ring-8 focus:ring-sky-500/5 outline-none transition-all text-2xl font-semibold placeholder:text-slate-200"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleSearch()}
           />
           <button
             onClick={handleSearch}
-            className="absolute right-4 top-4 bottom-4 px-10 bg-slate-900 text-white font-black rounded-[1.8rem] hover:bg-sky-600 transition-all active:scale-95 shadow-lg shadow-slate-200"
+            className="absolute right-4 top-4 bottom-4 px-10 bg-slate-900 text-white font-bold rounded-[1.8rem] hover:bg-sky-600 transition-all active:scale-95 shadow-lg shadow-slate-200"
           >
             Analyze
           </button>
@@ -220,27 +228,27 @@ export default function AnalysisPage() {
                       <Zap size={24} className={result.color.split(" ")[0]} />
                     </div>
                     <span
-                      className={`text-sm font-black uppercase tracking-widest ${result.color.split(" ")[0]}`}
+                      className={`text-sm font-bold uppercase tracking-widest ${result.color.split(" ")[0]}`}
                     >
                       {result.statusText}
                     </span>
                   </div>
-                  <h2 className="text-6xl font-black tracking-tighter text-slate-900">
+                  <h2 className="text-6xl font-bold tracking-tighter text-slate-900">
                     {result.drug}
                   </h2>
                   <div className="flex items-center gap-2 pt-2">
                     <ShieldCheck className="text-sky-600" size={16} />
-                    <span className="text-xs font-bold text-slate-400">
+                    <span className="text-xs font-semibold text-slate-400">
                       Validated against PharmGKB v4.2
                     </span>
                   </div>
                 </div>
 
                 <div className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm min-w-[200px] flex flex-col items-center">
-                  <span className="text-[10px] font-black text-slate-300 uppercase mb-1 tracking-widest">
+                  <span className="text-[10px] font-bold text-slate-300 uppercase mb-1 tracking-widest">
                     Primary Gene
                   </span>
-                  <span className="text-2xl font-black text-slate-800">
+                  <span className="text-2xl font-bold text-slate-800">
                     {result.relevantGene}
                   </span>
                 </div>
@@ -248,16 +256,16 @@ export default function AnalysisPage() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-10 mt-12 pt-10 border-t border-slate-200/50">
                 <div className="space-y-4">
-                  <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                  <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
                     <CheckCircle size={14} className="text-sky-500" /> Clinical
                     Recommendation
                   </h4>
-                  <p className="text-2xl font-black text-slate-800 leading-tight">
+                  <p className="text-2xl font-bold text-slate-800 leading-tight">
                     {result.recommendation}
                   </p>
                 </div>
                 <div className="space-y-4">
-                  <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                  <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
                     <Terminal size={14} className="text-amber-500" />{" "}
                     Evidence-Based AI Rationale
                   </h4>
@@ -274,18 +282,16 @@ export default function AnalysisPage() {
                   <Activity className="text-sky-400" size={32} />
                 </div>
                 <div>
-                  <h4 className="text-xl font-black">
-                    Pharmacist Action Alert
-                  </h4>
+                  <h4 className="text-xl font-bold">Pharmacist Action Alert</h4>
                   <p className="text-slate-400 font-medium">
                     Alternative path:{" "}
-                    <span className="text-white font-bold">
+                    <span className="text-white font-semibold">
                       {result.alternative}
                     </span>
                   </p>
                 </div>
               </div>
-              <button className="bg-sky-600 hover:bg-sky-500 text-white px-8 py-4 rounded-2xl font-black transition-all active:scale-95 flex items-center gap-2 shadow-lg shadow-sky-600/30">
+              <button className="bg-sky-600 hover:bg-sky-500 text-white px-8 py-4 rounded-2xl font-bold transition-all active:scale-95 flex items-center gap-2 shadow-lg shadow-sky-600/30">
                 <Download size={20} /> Export Medical Notice
               </button>
             </div>
@@ -295,7 +301,7 @@ export default function AnalysisPage() {
             <div className="w-24 h-24 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-8 border-2 border-white shadow-sm">
               <Beaker size={48} className="text-slate-300" />
             </div>
-            <h3 className="text-3xl font-black text-slate-800 mb-4 tracking-tighter">
+            <h3 className="text-3xl font-bold text-slate-800 mb-4 tracking-tighter">
               Ready for Clinical Query
             </h3>
             <p className="text-slate-400 max-w-md mx-auto font-medium leading-relaxed">

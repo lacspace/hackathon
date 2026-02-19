@@ -31,6 +31,7 @@ export default function UploadedFilesPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [viewingJson, setViewingJson] = useState<any>(null);
 
   useEffect(() => {
     fetchProfiles();
@@ -72,13 +73,13 @@ export default function UploadedFilesPage() {
   );
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col items-center p-6 md:p-12 font-sans">
+    <div className="min-h-screen bg-slate-50 flex flex-col items-center p-6 md:p-12 font-sans selection:bg-sky-100">
       <div className="w-full max-w-6xl">
         <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-12">
           <div>
             <button
               onClick={() => router.back()}
-              className="flex items-center gap-2 text-slate-500 hover:text-sky-600 transition-colors mb-4 group font-medium"
+              className="flex items-center gap-2 text-slate-500 hover:text-sky-600 transition-colors mb-4 group font-semibold"
             >
               <ArrowLeft
                 size={18}
@@ -86,13 +87,13 @@ export default function UploadedFilesPage() {
               />
               Back to Dashboard
             </button>
-            <h1 className="text-4xl font-black text-slate-900 tracking-tight flex items-center gap-4">
+            <h1 className="text-4xl font-bold text-slate-900 tracking-tight flex items-center gap-4">
               <div className="p-3 bg-sky-600 text-white rounded-2xl shadow-lg shadow-sky-100">
                 <FileText size={28} />
               </div>
               Archive Registry
             </h1>
-            <p className="text-slate-500 mt-2 text-lg">
+            <p className="text-slate-500 mt-2 text-lg font-medium">
               Manage and audit all historical genomic patient reports.
             </p>
           </div>
@@ -117,16 +118,16 @@ export default function UploadedFilesPage() {
             <input
               type="text"
               placeholder="Search by patient name or filename..."
-              className="w-full p-4 pl-12 rounded-2xl border-2 border-white shadow-sm focus:border-sky-500 focus:ring-4 focus:ring-sky-500/10 outline-none transition-all placeholder:text-slate-300 bg-white"
+              className="w-full p-4 pl-12 rounded-2xl border-2 border-white shadow-sm focus:border-sky-500 focus:ring-4 focus:ring-sky-500/10 outline-none transition-all placeholder:text-slate-300 bg-white font-medium"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-          <div className="bg-sky-600 p-4 rounded-2xl text-white flex flex-col justify-center">
+          <div className="bg-sky-600 p-4 rounded-2xl text-white flex flex-col justify-center shadow-lg shadow-sky-100">
             <span className="text-xs font-bold uppercase opacity-80 mb-1 tracking-widest">
               Total Registry
             </span>
-            <span className="text-3xl font-black">
+            <span className="text-3xl font-bold">
               {profiles.length} Reports
             </span>
           </div>
@@ -142,7 +143,7 @@ export default function UploadedFilesPage() {
             <p className="text-rose-600 font-medium mb-6">{error}</p>
             <button
               onClick={fetchProfiles}
-              className="bg-rose-600 text-white px-6 py-3 rounded-2xl font-bold hover:bg-rose-700 transition-all"
+              className="bg-rose-600 text-white px-6 py-3 rounded-2xl font-bold hover:bg-rose-700 transition-all shadow-lg shadow-rose-100"
             >
               Retry Connection
             </button>
@@ -165,7 +166,7 @@ export default function UploadedFilesPage() {
                   <div className="p-3 bg-slate-50 rounded-2xl text-slate-400 group-hover:bg-sky-50 group-hover:text-sky-600 transition-colors">
                     <Dna size={24} />
                   </div>
-                  <span className="text-[10px] font-black uppercase text-slate-300 font-mono tracking-tighter">
+                  <span className="text-[10px] font-bold uppercase text-slate-300 font-mono tracking-tighter">
                     {p.id.slice(0, 8)}
                   </span>
                 </div>
@@ -173,12 +174,12 @@ export default function UploadedFilesPage() {
                 <h3 className="text-xl font-bold text-slate-800 mb-1 group-hover:text-sky-900 transition-colors">
                   {p.name}
                 </h3>
-                <div className="flex items-center gap-2 text-sm text-slate-500 mb-6">
+                <div className="flex items-center gap-2 text-sm text-slate-500 mb-6 font-medium">
                   <FileText size={14} className="flex-shrink-0" />
                   <span className="truncate max-w-[200px]">{p.file_name}</span>
                 </div>
 
-                <div className="mt-auto pt-6 border-t border-slate-50 flex items-center justify-between">
+                <div className="mt-auto pt-6 border-t border-slate-50 flex items-center justify-between gap-2">
                   <div className="flex flex-col">
                     <span className="text-[10px] font-bold text-slate-400 uppercase">
                       Uploaded
@@ -189,48 +190,48 @@ export default function UploadedFilesPage() {
                       ).toLocaleDateString()}
                     </span>
                   </div>
-                  <button
-                    onClick={() => {
-                      // Simulate loading into local storage and navigating (as if just uploaded)
-                      localStorage.setItem(
-                        "geneticProfile",
-                        JSON.stringify({
-                          patient_id: p.id,
-                          name: p.name,
-                          pharmacogenomic_profile: p.genes,
-                          risk_assessment: {
-                            overall_risk_score:
-                              p.genes.filter(
-                                (g) => (g as any).riskLevel === "Toxic",
-                              ).length *
-                                20 +
-                              10,
-                            high_risk_variants_count: p.genes.filter(
-                              (g) => (g as any).riskLevel === "Toxic",
-                            ).length,
-                          },
-                          clinical_recommendation: [], // Simplified for historical view
-                          llm_generated_explanation: {
-                            biological_explanation:
-                              "Historical report loaded from database.",
-                            clinical_interpretation:
-                              "Review historical markers below.",
-                            evidence_citation: "PharmGKB Archive",
-                          },
-                          quality_metrics: {
-                            variant_evidence: "Verified",
-                            annotation_quality: "High",
-                            database_certainty: "99%",
-                          },
-                        }),
-                      );
-                      router.push("/dashboard");
-                    }}
-                    className="p-2 bg-sky-50 text-sky-600 rounded-xl hover:bg-sky-600 hover:text-white transition-all shadow-sm"
-                    title="View Full Report"
-                  >
-                    <ChevronRight size={20} />
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setViewingJson(p)}
+                      className="p-2 bg-slate-50 text-slate-400 rounded-xl hover:bg-slate-100 hover:text-slate-900 transition-all shadow-sm"
+                      title="View Raw JSON"
+                    >
+                      <Terminal size={18} />
+                    </button>
+                    <button
+                      onClick={() => {
+                        localStorage.setItem(
+                          "geneticProfile",
+                          JSON.stringify({
+                            patient_id: p.id,
+                            name: p.name,
+                            pharmacogenomic_profile: p.genes,
+                            risk_assessment: {
+                              overall_risk_score: 15,
+                              high_risk_variants_count: 0,
+                            },
+                            clinical_recommendation: [],
+                            llm_generated_explanation: {
+                              biological_explanation:
+                                "Historical report loaded.",
+                              clinical_interpretation: "Review markers.",
+                              evidence_citation: "PharmGKB Archive",
+                            },
+                            quality_metrics: {
+                              variant_evidence: "Verified",
+                              annotation_quality: "High",
+                              database_certainty: "99%",
+                            },
+                          }),
+                        );
+                        router.push("/dashboard");
+                      }}
+                      className="p-2 bg-sky-50 text-sky-600 rounded-xl hover:bg-sky-600 hover:text-white transition-all shadow-sm flex items-center gap-1 font-bold text-xs pr-3"
+                      title="View Full Report"
+                    >
+                      <ChevronRight size={18} /> Dashboard
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}
@@ -243,13 +244,68 @@ export default function UploadedFilesPage() {
             <h3 className="text-xl font-bold text-slate-800 mb-2">
               No Reports Found
             </h3>
-            <p className="text-slate-500 max-w-sm mx-auto">
+            <p className="text-slate-500 max-w-sm mx-auto font-medium">
               We couldn't find any reports matching your search. Try adjusting
               your filters.
             </p>
           </div>
         )}
+
+        {/* JSON Viewer Modal */}
+        {viewingJson && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
+            <div className="bg-white w-full max-w-4xl max-h-[80vh] rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col">
+              <div className="p-8 border-b flex justify-between items-center bg-slate-50">
+                <div>
+                  <h2 className="text-2xl font-bold text-slate-900">
+                    Patient JSON Record
+                  </h2>
+                  <p className="text-slate-500 font-medium">
+                    Raw clinical data for {viewingJson.name}
+                  </p>
+                </div>
+                <button
+                  onClick={() => setViewingJson(null)}
+                  className="bg-white p-3 rounded-2xl border hover:bg-slate-50 transition-colors"
+                >
+                  <ArrowLeft size={20} className="rotate-90 md:rotate-0" />
+                </button>
+              </div>
+              <div className="flex-1 overflow-auto p-8 bg-slate-900 text-sky-400 font-mono text-sm">
+                <pre>{JSON.stringify(viewingJson, null, 2)}</pre>
+              </div>
+              <div className="p-6 bg-slate-50 text-right">
+                <button
+                  onClick={() => setViewingJson(null)}
+                  className="px-8 py-3 bg-slate-900 text-white font-bold rounded-2xl hover:bg-slate-800 transition-all"
+                >
+                  Close Archive
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
+  );
+}
+
+// Helper icons
+function Terminal({ size }: { size: number }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <polyline points="4 17 10 11 4 5"></polyline>
+      <line x1="12" y1="19" x2="20" y2="19"></line>
+    </svg>
   );
 }
