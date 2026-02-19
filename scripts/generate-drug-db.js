@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 // const glob = require('glob'); // Removed dependency
 
-const GUIDELINE_FOLDER = path.join(__dirname, '../guidelineAnnotations.json');
+const GUIDELINE_FOLDER = path.join(__dirname, '../data/guidelineAnnotations');
 const OUTPUT_FILE = path.join(__dirname, '../src/data/drug_db.json');
 
 console.log(`📂 Searching for guidelines in: ${GUIDELINE_FOLDER}`);
