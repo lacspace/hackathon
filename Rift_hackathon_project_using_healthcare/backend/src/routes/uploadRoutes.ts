@@ -1,9 +1,10 @@
-import express, { Request, Response } from 'express';
+import express, { type Request, type Response } from 'express';
 import multer from 'multer';
 import fs from 'fs';
 import path from 'path';
-import Profile from '../models/Profile';
-import { parseVCFContent } from '../utils/vcfParser';
+import { createProfile } from '../models/Profile.js';
+import { parseVCFContent } from '../utils/vcfParser.js';
+import { generatePatientReport } from '../utils/aiModule.js';
 
 const router = express.Router();
 
@@ -64,22 +65,23 @@ router.post('/', upload.single('vcf'), async (req: Request, res: Response) => {
         const filePath = req.file.path;
         const fileContent = fs.readFileSync(filePath, 'utf8');
 
-        // Parse Logic
+        // Parse VCF
         const geneticData = parseVCFContent(fileContent);
 
-        // Create Profile in DB
-        const newProfile = await Profile.create({
-            name: `Patient ${new Date().toLocaleDateString()}`, 
-            genes: geneticData
+        // Persist to Supabase
+        const newProfile = await createProfile({
+            name: `Patient ${new Date().toLocaleDateString()}`,
+            genes: geneticData,
+            filePath: req.file.path,
+            fileName: req.file.originalname,
         });
 
-        // Cleanup
-        fs.unlinkSync(filePath);
+        // Generate the required structured report as per Hackathon Case Study
+        const report = generatePatientReport(newProfile.id, (newProfile as any).genes);
 
         res.status(201).json({
-            message: 'Genomic analysis complete',
-            profileId: newProfile._id,
-            genes: geneticData
+            message: 'File uploaded and genomic analysis complete',
+            ...report
         });
     } catch (error: any) {
         console.error('❌ Upload Error:', error.message);

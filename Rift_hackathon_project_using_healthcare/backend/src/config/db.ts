@@ -1,16 +1,33 @@
-import dotenv from 'dotenv';
-import mongoose from 'mongoose';
+import { createClient } from "@supabase/supabase-js";
+import dotenv from "dotenv";
 
 dotenv.config();
 
-const connectDB = async () => {
-    try {
-        const conn = await mongoose.connect(process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/pharmaguard');
-        console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
-    } catch (error: any) {
-        console.error(`❌ Error: ${error.message}`);
-        process.exit(1);
+const supabaseUrl = process.env.SUPABASE_URL!;
+const supabaseKey = process.env.SUPABASE_ANON_KEY!;
+
+if (!supabaseUrl || !supabaseKey) {
+  throw new Error(
+    "❌ Missing SUPABASE_URL or SUPABASE_ANON_KEY in environment variables",
+  );
+}
+
+const supabase = createClient(supabaseUrl, supabaseKey);
+
+export const connectDB = async () => {
+  try {
+    // Quick connectivity test – fetch from a known table
+    const { error } = await supabase.from("profiles").select("id").limit(1);
+    if (error && error.code !== "PGRST116") {
+      // PGRST116 = "table not found" which is ok at boot before migration
+      console.warn(`⚠️  Supabase warning: ${error.message}`);
+    } else {
+      console.log("✅ Supabase connected successfully");
     }
+  } catch (err: any) {
+    console.error(`❌ Supabase connection error: ${err.message}`);
+    process.exit(1);
+  }
 };
 
-export default connectDB;
+export default supabase;

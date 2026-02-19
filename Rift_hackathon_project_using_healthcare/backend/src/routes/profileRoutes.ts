@@ -1,12 +1,25 @@
-import express, { Request, Response } from 'express';
-import Profile from '../models/Profile';
+import express, { type Request, type Response } from 'express';
+import { findProfileById, updateProfileById, getAllProfiles } from '../models/Profile.js';
 
 const router = express.Router();
 
-// Get Profile by ID
+// Get all profiles
+router.get('/', async (req: Request, res: Response) => {
+    try {
+        const profiles = await getAllProfiles();
+        res.json(profiles);
+    } catch (error: any) {
+        console.error('Profiles Fetch All Error:', error);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+// Get Profile by ID (UUID)
 router.get('/:id', async (req: Request, res: Response) => {
     try {
-        const profile = await Profile.findById(req.params.id);
+        const { id } = req.params;
+        if (!id) return res.status(400).json({ error: 'Missing ID' });
+        const profile = await findProfileById(id as string);
         if (!profile) return res.status(404).json({ error: 'Profile not found' });
         res.json(profile);
     } catch (error: any) {
@@ -18,7 +31,9 @@ router.get('/:id', async (req: Request, res: Response) => {
 // Update Profile
 router.put('/:id', async (req: Request, res: Response) => {
     try {
-        const profile = await Profile.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        const { id } = req.params;
+        if (!id) return res.status(400).json({ error: 'Missing ID' });
+        const profile = await updateProfileById(id as string, req.body);
         if (!profile) return res.status(404).json({ error: 'Profile not found' });
         res.json(profile);
     } catch (error: any) {

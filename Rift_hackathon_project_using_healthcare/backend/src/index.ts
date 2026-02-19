@@ -1,33 +1,39 @@
-import express, { Application, Request, Response, NextFunction } from 'express';
+import express, { type Application, type Request, type Response, type NextFunction } from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
-import connectDB from './config/db';
+import { connectDB } from './config/db.js';
 import swaggerUi from 'swagger-ui-express';
 import swaggerJsDoc from 'swagger-jsdoc';
 
 // Import Routes
-import uploadRoutes from './routes/uploadRoutes';
-import profileRoutes from './routes/profileRoutes';
+import uploadRoutes from './routes/uploadRoutes.js';
+import profileRoutes from './routes/profileRoutes.js';
 
 // Load Env
 dotenv.config();
 
-// Connect DB
-connectDB();
+// Connect to Supabase (fire-and-forget connectivity check)
+connectDB().catch(console.error);
 
 const app: Application = express();
 
 // Middleware
 app.use(express.json());
 app.use(cors({
-    origin: ["http://localhost:3000", "http://127.0.0.1:3000"],
+    origin: [
+        process.env.CLIENT_URL || 'http://localhost:3000',
+        'http://localhost:3000',
+        'http://localhost:3001',
+        'http://127.0.0.1:3000',
+        'http://127.0.0.1:3001',
+    ],
     credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
 }));
 app.use(helmet({
-    crossOriginResourcePolicy: false, 
+    crossOriginResourcePolicy: false,
 }));
 app.use(morgan('dev'));
 
@@ -40,8 +46,8 @@ const swaggerOptions = {
             version: '1.0.0',
             description: 'API Documentation for PharmaGuard Genomic Analysis Platform',
             contact: {
-                name: "PharmaGuard Support",
-                email: "support@pharmaguard.med"
+                name: 'PharmaGuard Support',
+                email: 'support@pharmaguard.med'
             }
         },
         servers: [
@@ -51,7 +57,7 @@ const swaggerOptions = {
             }
         ]
     },
-    apis: ["./src/routes/*.ts"],
+    apis: ['./src/routes/*.ts'],
 };
 
 const specs = swaggerJsDoc(swaggerOptions);
@@ -63,18 +69,18 @@ app.use('/api/profile', profileRoutes);
 
 // Health Check
 app.get('/', (req: Request, res: Response) => {
-    res.status(200).json({ 
-        message: 'PharmaGuard API is Online 🧬', 
-        docs: `http://localhost:${process.env.PORT || 5000}/api-docs` 
+    res.status(200).json({
+        message: 'PharmaGuard API is Online 🧬',
+        docs: `http://localhost:${process.env.PORT || 5000}/api-docs`
     });
 });
 
 // Error Handling Middleware
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
     console.error(`❌ Server Error: ${err.message}`);
-    res.status(500).json({ 
-        message: 'Internal Server Error', 
-        error: process.env.NODE_ENV === 'development' ? err.message : undefined 
+    res.status(500).json({
+        message: 'Internal Server Error',
+        error: process.env.NODE_ENV === 'development' ? err.message : undefined
     });
 });
 
