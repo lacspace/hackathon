@@ -12,7 +12,7 @@
 
 - **Project Title**: PharmaGuard
 - **Live Demo Link**: [https://hackathon-lemon-nine.vercel.app](https://hackathon-lemon-nine.vercel.app)
-- **Backend Repository**: [https://github.com/lacspace/hackathon-backend](https://github.com/lacspace/hackathon-backend)
+- **Unified Repository**: [https://github.com/lacspace/hackathon](https://github.com/lacspace/hackathon)
 - **LinkedIn Video Link**: _[Please Insert Your Video Link Here]_
 - **Problem Statement**: AI in Healthcare - Pharmacogenomics Interpretation
 
