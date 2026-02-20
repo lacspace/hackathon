@@ -1,108 +1,114 @@
-# 🧬 PharmaGuard AI
+# 🧬 PharmaGuard: Next-Gen Pharmacogenomic AI Platform
 
-### Genomic Intelligence for Safer Dosing
+[![Live Demo](https://img.shields.io/badge/Live-Demo-brightgreen.svg)](https://hackathon-lemon-nine.vercel.app)
+[![Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black.svg)](https://vercel.com)
+[![Next.js](https://img.shields.io/badge/Next.js-15-blue.svg)](https://nextjs.org)
 
-**PharmaGuard AI** is a professional-grade pharmacogenomics (PGx) platform designed to bridge the gap between raw genomic data and clinical decision-making. By cross-referencing patient VCF files against high-confidence clinical datasets (PharmGKB, CPIC, ClinPGx), the system provides immediate, actionable insights to prevent Adverse Drug Reactions (ADRs) and optimize medication efficacy.
-
----
-
-## 🚀 Key Features
-
-### 1. High-Fidelity VCF Ingestion
-
-A robust parser that accepts standard `.vcf` and `.txt` genomic files. It automatically identifies clinically relevant variants across major metabolic pathways including **CYP2D6, CYP2C19, TPMT, DPYD,** and more.
-
-### 2. Precision Risk Assessment
-
-Powered by a dynamic knowledge base of over **1,480+ unique medications**. The platform calculates risk scores based on the patient's individual phenotype—identifying poor, intermediate, and ultra-rapid metabolizers with high clinical accuracy.
-
-### 3. AI-Narrated Clinical Reports
-
-Generates structured patient reports that translate complex genetic markers into human-readable narratives. Reports include:
-
-- **Biological Explanations**: Scientific reasoning behind the risk findings.
-- **Clinical Interpretations**: Actionable medical advice derived from CPIC/DPWG guidelines.
-- **Quality Metrics**: Database certainty and evidence levels (e.g., Level 1A).
-
-### 4. Interactive Evidence Console
-
-A dedicated workspace where clinicians can search any medication to perform a real-time cross-reference against the patient's genetic profile, identifying safer alternatives for high-risk profiles.
-
-### 5. Archive Registry & Portability
-
-A comprehensive database of all historical patient reports, allowing for long-term audits and bulk data export in structured JSON format for research and integration.
+**PharmaGuard** is a high-performance clinical decision support system that leverages Genetic Analysis and Generative AI (Gemini) to predict patient drug responses. By parsing standard genomic files (VCF), it provides real-time, personalized medical interpretations to prevent Adverse Drug Reactions (ADRs).
 
 ---
 
-## 🛠️ Technology Stack
+## 🚀 Submission Details
 
-- **Frontend**: Next.js 15 (App Router), Tailwind CSS, Lucide React icons.
-- **Backend**: Node.js (ESM), Express.js, TypeScript.
-- **Database**: Supabase (PostgreSQL) with JSONB support for clinical profiles.
-- **Intelligence**: Integrated with PharmGKB Clinical Variant and Guideline datasets.
-
----
-
-## ⚙️ Getting Started
-
-### Prerequisites
-
-- Node.js v18+
-- Supabase Project (URL and Anon Key)
-
-### Installation
-
-1. **Clone the repository**
-2. **Setup Backend Environment**:
-   Create a `.env` file in the `backend` directory:
-   ```env
-   PORT=5001
-   SUPABASE_URL=your_supabase_url
-   SUPABASE_ANON_KEY=your_supabase_anon_key
-   ```
-3. **Database Migration**:
-   Run the following SQL in your Supabase SQL Editor:
-   ```sql
-   create table profiles (
-     id          uuid primary key default gen_random_uuid(),
-     name        text not null,
-     genes       jsonb not null default '[]'::jsonb,
-     file_path   text,
-     file_name   text,
-     created_at  timestamptz default now(),
-     updated_at  timestamptz default now()
-   );
-   ```
-4. **Start Development Servers**:
-
-   **Terminal 1 (Backend)**:
-
-   ```bash
-   cd backend
-   npm install
-   npm run dev
-   ```
-
-   **Terminal 2 (Frontend)**:
-
-   ```bash
-   npm install
-   npm run dev
-   ```
+- **Project Title**: PharmaGuard
+- **Live Demo Link**: [https://hackathon-lemon-nine.vercel.app](https://hackathon-lemon-nine.vercel.app)
+- **Backend Repository**: [https://github.com/lacspace/hackathon-backend](https://github.com/lacspace/hackathon-backend)
+- **LinkedIn Video Link**: _[Please Insert Your Video Link Here]_
+- **Problem Statement**: AI in Healthcare - Pharmacogenomics Interpretation
 
 ---
 
-## 📜 Credits & Acknowledgments
+## 🛠️ Tech Stack
 
-Developed with ❤️ for the **Advanced Health-Tech Hackathon**.
+### Frontend (User Interface)
 
-**Special Credits**:
+- **Framework**: Next.js 15 (App Router)
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS (Premium Dark/Glassmorphism Design)
+- **Icons**: Lucide React
+- **State Management**: React Context (AuthProvider)
 
-- **Lacspace**: For foundational support and architectural guidance.
-- **PharmGKB & CPIC**: For the authoritative genomic datasets that power this platform's intelligence.
+### Infrastructure
+
+- **Hosting**: Vercel (Frontend) & AWS EC2 (Backend)
+- **SSL**: Let's Encrypt (Certbot)
+- **DNS**: sslip.io IP-to-Domain mapping
 
 ---
 
-## ⚖️ Disclaimer
+## 🏗️ Architecture Overview
 
-_This platform is a clinical decision-support tool meant for educational and research purposes during the hackathon. It is not intended for diagnostic use without supervision from certified medical genetics professional._
+PharmaGuard utilizes a **decoupled Hybrid Architecture** to handle intensive genomic processing:
+
+1.  **Frontend (Vercel)**: A high-speed React layer optimized for clinical data visualization and file uploads.
+2.  **Genomic Engine (AWS EC2)**: A dedicated Node.js/Express worker that handles heavy VCF parsing, local drug-database cross-referencing, and AI report generation.
+3.  **Intelligence Layer**: Integrated with Google Gemini 1.5 Flash for professional medical interpretation of genetic variants.
+4.  **Data Layer**: Supabase (PostgreSQL) for secure patient profiling and variant history.
+
+---
+
+## 📦 Installation & Setup
+
+1.  **Clone the repository**:
+
+    ```bash
+    git clone https://github.com/lacspace/hackathon.git
+    cd hackathon
+    ```
+
+2.  **Install dependencies**:
+
+    ```bash
+    npm install
+    ```
+
+3.  **Configure Environment**:
+    Create a `.env.local` file:
+
+    ```env
+    NEXT_PUBLIC_API_URL=https://3.109.49.214.sslip.io/api
+    ```
+
+4.  **Run Development Server**:
+
+    ```bash
+    npm run dev
+    ```
+
+5.  **Build for Production**:
+    ```bash
+    npm run build
+    ```
+
+---
+
+## 🧪 Usage Examples
+
+### 1. Security Authentication
+
+Authorized personnel only (Master Clinicians).
+
+- **Email**: `admin@lacspace.com`
+- **Password**: `Abcd@123.45`
+
+### 2. Genomic Parsing
+
+Upload any standard `.vcf` file (sample files included in root directory). The system will identify SNPs and cross-reference them against CPIC guidelines.
+
+### 3. AI Medical Report
+
+The "View Analysis" button triggers a Gemini AI interpretation and provides biological explanations of enzyme variations (e.g., CYP2D6 Poor Metabolizer).
+
+---
+
+## 👥 Team Members
+
+- **Deep Naraya** (Lead Developer)
+- **Abhishek jain** (Full-Stack Engineer)
+- **Adarsh Kumar Rai** (Cloud Architect)
+
+---
+
+## 📄 License
+
+This project is part of the **RIFT 2026 Hackathon** submission.
