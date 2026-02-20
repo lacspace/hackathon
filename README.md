@@ -88,8 +88,9 @@ PharmaGuard utilizes a **decoupled Hybrid Architecture** to handle intensive gen
 
 Authorized personnel only (Master Clinicians).
 
-- **Email**: `admin@lacspace.com`
-- **Password**: `Abcd@123.45`
+- **Email**: `admin@lacspace.com` (Master Admin)
+- **Email**: `deep@pharmaguard.com` (Clinical Lead)
+- **Password**: `Abcd@123.45` (Global Security Key)
 
 ### 2. Genomic Parsing
 
