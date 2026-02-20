@@ -16,14 +16,19 @@ build/
 
 # Environment files
 .env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+.env.*
 
 # OS files
 .DS_Store
 **/.DS_Store
+
+# Root assets
+backend/
+uploads/
+data/
+*.pem
+*.vcf
+*.ipynb
 
 # Debug logs
 npm-debug.log*
