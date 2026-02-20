@@ -23,7 +23,7 @@ build/
 **/.DS_Store
 
 # Root assets
-backend/
+# backend/ (removed to include in main repo)
 uploads/
 data/
 *.pem
