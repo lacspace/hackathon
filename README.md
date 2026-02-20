@@ -104,8 +104,8 @@ The "View Analysis" button triggers a Gemini AI interpretation and provides biol
 
 ## 👥 Team Members
 
-- **Deep Naraya** (Lead Developer)
-- **Abhishek jain** (Full-Stack Engineer)
+- **Deep Narayan** (Lead Developer)
+- **Abhishek Jain** (Full-Stack Engineer)
 - **Adarsh Kumar Rai** (Cloud Architect)
 
 ---
